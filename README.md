@@ -1,8 +1,10 @@
 ## Usage
 Python 3 only!
 ```
-from t2d import Text2Digits
-Text2Digits().convert("I was born in nineteen ninety two and am twenty six years old!")
+from text2digits import text2digits
+t2d = text2digits.Text2Digits()
+
+print(t2d.convert("I was born in nineteen ninety two and am twenty six years old!"))
 ```
 
 Output:

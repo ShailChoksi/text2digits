@@ -22,9 +22,6 @@ class Text2Digits():
         for idx, word in enumerate(TENS): self.numwords[word] = (1, (idx+1) * 10)
         for idx, word in enumerate(SCALES): self.numwords[word] = (10 ** (idx * 3 or 2), 0)
 
-        print(self.numwords)
-
-
     def convert(self, phrase):
         substr_arr, punctuation_arr = self.get_substr_punctuation(phrase)
         digits_arr = []
