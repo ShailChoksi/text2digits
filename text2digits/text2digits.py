@@ -172,7 +172,7 @@ class Text2Digits():
 if __name__ == '__main__':
     t2n = Text2Digits()
     tests = [
-        # "A random string",
+        "A random string",
         "I am thirty six years old with a child that is four. I would like to get him four cars!",
         "I was born in twenty ten",
         "I was born in nineteen sixty four",
@@ -182,9 +182,12 @@ if __name__ == '__main__':
         "thirty twenty one",
         "one thousand six hundred sixty six",
         "one thousand and six hundred and sixty six",
+        "sixteen sixty six",
+        "eleven hundred twelve",
         "Sixteen and seven",
         "twenty ten and twenty one",
-        "I was born in nineteen ninety two and am twenty six years old!"
+        "I was born in nineteen ninety two and am twenty six years old!",
+        "three forty five"
     ]
 
     for test in tests:
