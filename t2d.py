@@ -186,7 +186,8 @@ if __name__ == '__main__':
         "one thousand six hundred sixty six",
         "one thousand and six hundred and sixty six",
         "Sixteen and seven",
-        "twenty ten and twenty one"
+        "twenty ten and twenty one",
+        "I was born in nineteen ninety two and am twenty six years old!"
     ]
 
     for test in tests:
