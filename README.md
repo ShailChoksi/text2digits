@@ -1,3 +1,8 @@
+## Installation
+```
+pip3 install text2digits
+```
+
 ## Usage
 Python 3 only!
 ```
