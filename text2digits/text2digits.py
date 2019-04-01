@@ -112,8 +112,7 @@ class Text2Digits():
                     onnumber = True
 
                     # For cases such as twenty ten -> 2010, twenty nineteen -> 2019
-
-                    if is_tens and (word not in UNITS or word == "ten"):
+                    if is_tens and (word not in UNITS or word == "ten") and (word not in SCALES):
                         curstring += repr(result + current)
                         result = current = 0
 
