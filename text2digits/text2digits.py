@@ -48,7 +48,7 @@ class TextPreprocessor:
         return TextPreprocessor.bigram(item1, item2)
     
     @staticmethod
-    def get_match(word, collection):
+    def get_match(word, collection, threshold):
         '''
         Returns the most syntactically similar word in the collection
         to the specified word.
@@ -58,7 +58,7 @@ class TextPreprocessor:
         
         for item in collection:
             similarity = TextPreprocessor.get_similarity(word, item)
-            if similarity > max(max_similarity, 0.5):
+            if similarity > max(max_similarity, threshold):
                 match = item
                 max_similarity = similarity
                 
@@ -66,22 +66,23 @@ class TextPreprocessor:
 
 
 class Text2Digits():
-    def __init__(self, excluded_chars=""):
+    def __init__(self, excluded_chars="", similarity_threshold=0.5):
         self.excluded = excluded_chars
         self.accepted = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
         self.numwords = dict()
+        self.threshold = similarity_threshold
 
         self.numwords['and'] = (1, 0)
         for idx, word in enumerate(UNITS): self.numwords[word] = (1, idx)
         for idx, word in enumerate(TENS): self.numwords[word] = (1, (idx+1) * 10)
         for idx, word in enumerate(SCALES): self.numwords[word] = (10 ** (idx * 3 or 2), 0)
 
-    def convert(self, phrase):
+    def convert(self, phrase, spell_check=False):
         substr_arr, punctuation_arr = self.get_substr_punctuation(phrase)
         digits_arr = []
 
         for substr in substr_arr:
-            digits_arr.append(self.convert_to_digits(substr))
+            digits_arr.append(self.convert_to_digits(substr, spell_check))
 
         # Recreate the phrase by zipping the converted phrases with the punctuations
         digits_phrase = "".join([sstr + punct + " " for sstr, punct in zip(digits_arr, punctuation_arr)])
@@ -120,7 +121,7 @@ class Text2Digits():
     https://stackoverflow.com/questions/493174/is-there-a-way-to-convert-number-words-to-integers
     """
 
-    def convert_to_digits(self, textnum):
+    def convert_to_digits(self, textnum, spell_check=False):
         textnum = textnum.replace('-', ' ')
         current = result = word_count = 0
         curstring = ''
@@ -146,9 +147,10 @@ class Text2Digits():
                         word = "%s%s" % (word[:-len(ending)], replacement)
 
                 # Handle misspelt words
-                matched_num = TextPreprocessor.get_match(word, self.numwords.keys())
-                if matched_num is not None:
-                    word = matched_num
+                if spell_check:
+                    matched_num = TextPreprocessor.get_match(word, self.numwords.keys(), self.threshold)
+                    if matched_num is not None:
+                        word = matched_num
                 
                 # Is not a number word
                 if (not self.is_numword(word)) or (word == 'and' and not lastscale):
@@ -229,7 +231,7 @@ class Text2Digits():
         return True
 
 if __name__ == '__main__':
-    t2n = Text2Digits()
+    t2n = Text2Digits(similarity_threshold=0.7)
     tests = [
         "A random string",
         "I am thirty six years old with a child that is four. I would like to get him four cars!",
@@ -256,4 +258,4 @@ if __name__ == '__main__':
     ]
 
     for test in tests:
-        print(test + ":", t2n.convert(test) + "\n")
+        print(test + ":", t2n.convert(test, spell_check=True) + "\n")
