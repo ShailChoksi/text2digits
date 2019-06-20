@@ -15,12 +15,12 @@ t2d.convert("twenty ten and twenty one")
 It can handle a variety of phrases. Spoken/Informal and formal language:
 
 ```
-"A random string" -> 'a random string'
-"I am thirty six years old with a child that is four. I would like to get him four cars!" -> 'i am 36 years old with a child that is 4. i would like to get him 4 cars!'
-"I was born in twenty ten" -> 'i was born in 2010'
-"I was born in nineteen sixty four" -> 'i was born in 1964'
-"I am the fourth cousin" -> 'i am the 4 cousin'
-"I am twenty nine" -> 'i am 29'
+"A random string" -> 'A random string'
+"I am thirty six years old with a child that is four. I would like to get him four cars!" -> 'I am 36 years old with a child that is 4. I would like to get him 4 cars!'
+"I was born in twenty ten" -> 'I was born in 2010'
+"I was born in nineteen sixty four" -> 'I was born in 1964'
+"I am the fourth cousin" -> 'I am the 4 cousin'
+"I am twenty nine" -> 'I am 29'
 "it was twenty ten and was negative thirty seven degrees" -> 'it was 2010 and was negative 37 degrees'
 "thirty twenty one" -> '3021'
 "one thousand six hundred sixty six" -> '1666'
@@ -29,7 +29,7 @@ It can handle a variety of phrases. Spoken/Informal and formal language:
 "eleven hundred twelve" -> '1112'
 "Sixteen and seven" -> '16 and 7'
 "twenty ten and twenty one" -> '2010 and 21'
-"I was born in nineteen ninety two and am twenty six years old!" -> 'i was born in 1992 and am 26 years old!'
+"I was born in nineteen ninety two and am twenty six years old!" -> 'I was born in 1992 and am 26 years old!'
 "three forty five" -> '345'
 ```
 
