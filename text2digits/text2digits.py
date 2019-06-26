@@ -130,6 +130,7 @@ class Text2Digits():
 
         for word in textnum.split():
             word_count += 1
+            word_original = word
             word = word.lower()
             if word in ORDINAL_WORDS:
                 scale, increment = (1, ORDINAL_WORDS[word])
@@ -157,7 +158,7 @@ class Text2Digits():
                     if onnumber:
                         # Flush the current number we are building
                         curstring += repr(result + current) + " "
-                    curstring += word
+                    curstring += word_original
 
                     if word_count != total_words:
                         curstring += " "
