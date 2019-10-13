@@ -1,4 +1,5 @@
 import re
+import math
 
 UNITS = [
     'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
@@ -254,7 +255,10 @@ class Text2Digits():
         if type(x) == str:
             x = x.replace(',', '')
         try:
-            float(x)
+            x = float(x)
+
+            if math.isnan(x) or math.isinf(x):
+                return False
         except:
             return False
         return True
