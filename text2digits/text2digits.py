@@ -1,3 +1,4 @@
+import re
 import math
 
 UNITS = [
@@ -29,12 +30,12 @@ class TextPreprocessor:
         for i in range(word1_length):
             if i == word1_length - 1:
                 continue
-            pairs1.append(word1[i] + word1[i+1])
+            pairs1.append(word1[i] + word1[i + 1])
 
         for i in range(word2_length):
             if i == word2_length - 1:
                 continue
-            pairs2.append(word2[i] + word2[i+1])
+            pairs2.append(word2[i] + word2[i + 1])
 
         similar = [word for word in pairs1 if word in pairs2]
 
@@ -66,6 +67,32 @@ class TextPreprocessor:
                 
         return match
 
+    @staticmethod
+    def split_glues(string, separator=r'\s+'):
+        '''
+        Splits a string and preserves the glue, i.e. the separator fragments.
+        This is useful when words of a sentence should be processed while still
+        keeping the possibility to recover the original sentence.
+
+        :param string: The string to be split.
+        :param separator: The separator to use for splitting (defaults to
+        whitespace).
+        :return: A generator yielding (match, glue) pairs, e.g. the word and
+                 the whitespace next to it. If no glue is left, an empty string
+                 is returned.
+        '''
+        while True:
+            match = re.search(separator, string)
+            if not match:
+                # The last word does not have a glue
+                yield string, ''
+                break
+
+            yield string[:match.start()], match.group()
+
+            # Proceed with the remaining string
+            string = string[match.end():]
+
 
 class Text2Digits():
     def __init__(self, excluded_chars="", similarity_threshold=0.5):
@@ -76,7 +103,7 @@ class Text2Digits():
 
         self.numwords['and'] = (1, 0)
         for idx, word in enumerate(UNITS): self.numwords[word] = (1, idx)
-        for idx, word in enumerate(TENS): self.numwords[word] = (1, (idx+1) * 10)
+        for idx, word in enumerate(TENS): self.numwords[word] = (1, (idx + 1) * 10)
         for idx, word in enumerate(SCALES): self.numwords[word] = (10 ** (idx * 3 or 2), 0)
 
     def convert(self, phrase, spell_check=False):
@@ -87,14 +114,15 @@ class Text2Digits():
             digits_arr.append(self.convert_to_digits(substr, spell_check))
 
         # Recreate the phrase by zipping the converted phrases with the punctuations
-        digits_phrase = "".join([sstr + punct + " " for sstr, punct in zip(digits_arr, punctuation_arr)])
+        digits_phrase = "".join([sstr + punct for sstr, punct in zip(digits_arr, punctuation_arr)])
 
-        return digits_phrase.strip()
+        return digits_phrase
 
     """
     This function takes in a phrase and outputs an array of substring split by punctuation and an array of
     all the punctuations that were stripped out
     """
+
     def get_substr_punctuation(self, phrase):
         substr_arr = []
         punctuation_arr = []
@@ -128,9 +156,9 @@ class Text2Digits():
         current = result = word_count = 0
         curstring = ''
         onnumber = lastunit = lastscale = is_tens = False
-        total_words = len(textnum.split())
+        last_number_glue = ''
 
-        for word in textnum.split():
+        for word, glue in TextPreprocessor.split_glues(textnum):
             word_count += 1
             word_original = word
             word = word.lower()
@@ -141,6 +169,7 @@ class Text2Digits():
                     result += current
                     current = 0
                 onnumber = True
+                last_number_glue = glue
                 lastunit = lastscale = is_tens = False
 
             else:
@@ -159,11 +188,8 @@ class Text2Digits():
                 if (not self.is_numword(word)) or (word == 'and' and not lastscale):
                     if onnumber:
                         # Flush the current number we are building
-                        curstring += repr(result + current) + " "
-                    curstring += word_original
-
-                    if word_count != total_words:
-                        curstring += " "
+                        curstring += repr(result + current) + last_number_glue
+                    curstring += word_original + glue
 
                     result = current = 0
                     onnumber = False
@@ -175,6 +201,7 @@ class Text2Digits():
                 else:
                     scale, increment = self.from_numword(word)
                     onnumber = True
+                    last_number_glue = glue
 
                     # For cases such as twenty ten -> 2010, twenty nineteen -> 2019
                     if is_tens and (word not in UNITS or word == "ten") and (word not in SCALES):
@@ -204,9 +231,9 @@ class Text2Digits():
                     elif word in TENS:
                         is_tens = True
 
-
+        # Flush remaining number (in case the last word of a sentence corresponds to a number)
         if onnumber:
-            curstring += repr(result + current)
+            curstring += repr(result + current) + last_number_glue
 
         return curstring
 
@@ -236,6 +263,7 @@ class Text2Digits():
             return False
         return True
 
+
 if __name__ == '__main__':
     t2n = Text2Digits(similarity_threshold=0.7)
     tests = [
@@ -260,8 +288,9 @@ if __name__ == '__main__':
         "nintteen",
         "ninten",
         "ninetin",
-        "ninteen nineti niine"
+        "ninteen nineti niine",
+        "forty two,  two. 0.5-1"
     ]
 
     for test in tests:
-        print(test + ":", t2n.convert(test, spell_check=True) + "\n")
+        print("\"" + test + "\" -> '" + t2n.convert(test, spell_check=True) + "'")
