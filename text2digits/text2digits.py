@@ -224,6 +224,7 @@ class Text2Digits():
 
                     lastscale = False
                     lastunit = False
+                    is_tens = False
                     if word in SCALES:
                         lastscale = True
                     elif word in UNITS:
@@ -289,7 +290,22 @@ if __name__ == '__main__':
         "ninten",
         "ninetin",
         "ninteen nineti niine",
-        "forty two,  two. 0.5-1"
+        "forty two,  two. 0.5-1",
+        "sixty six hundred",
+        "one two zero three",
+        "one fifty one twenty one",
+        "twenty nineteen",
+        "sixty six ten",
+        "ten thousand one",
+        "ten thousand fifty",
+        "ten thousand",
+        "hundred thousand",
+        "one hundred thousand",
+        "fifty five thousand",
+        "fifty five twelve",
+        "asb is twenty two altogether fifty five twelve parrot",
+        "twenty two zero three",
+        "fifty one thirty three"
     ]
 
     for test in tests:
