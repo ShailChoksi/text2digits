@@ -1,14 +1,9 @@
 import re
 import math
 
-UNITS = [
-    'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
-    'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen',
-    'sixteen', 'seventeen', 'eighteen', 'nineteen',
-]
-TENS = [
-    'ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'
-]
+UNITS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
+TEENS = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen']
+TENS = ['ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
 SCALES = ['hundred', 'thousand', 'million', 'billion', 'trillion']
 ORDINAL_WORDS = {'oh': 0, 'first': 1, 'second': 2, 'third': 3, 'fifth': 5, 'eighth': 8, 'ninth': 9, 'twelfth': 12}
 ORDINAL_ENDINGS = [('ieth', 'y'), ('th', '')]
@@ -103,6 +98,7 @@ class Text2Digits():
 
         self.numwords['and'] = (1, 0)
         for idx, word in enumerate(UNITS): self.numwords[word] = (1, idx)
+        for idx, word in enumerate(TEENS): self.numwords[word] = (1, idx + 10)
         for idx, word in enumerate(TENS): self.numwords[word] = (1, (idx + 1) * 10)
         for idx, word in enumerate(SCALES): self.numwords[word] = (10 ** (idx * 3 or 2), 0)
 
@@ -204,7 +200,7 @@ class Text2Digits():
                     last_number_glue = glue
 
                     # For cases such as twenty ten -> 2010, twenty nineteen -> 2019
-                    if is_tens and (word not in UNITS or word == "ten") and (word not in SCALES):
+                    if is_tens and word not in (UNITS + SCALES):
                         curstring += repr(result + current)
                         result = current = 0
 
@@ -227,7 +223,7 @@ class Text2Digits():
                     is_tens = False
                     if word in SCALES:
                         lastscale = True
-                    elif word in UNITS:
+                    elif word in (UNITS + TEENS):
                         lastunit = True
                     elif word in TENS:
                         is_tens = True
@@ -304,8 +300,12 @@ if __name__ == '__main__':
         "fifty five thousand",
         "fifty five twelve",
         "asb is twenty two altogether fifty five twelve parrot",
-        "twenty two zero three",
-        "fifty one thirty three"
+        "fifty one thirty three",
+        "thirty eleven",
+        "twenty eleven zero three",
+        "zero twelve",
+        "twelve zero nine",
+        "twenty eleven three"
     ]
 
     for test in tests:
