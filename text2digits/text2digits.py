@@ -5,7 +5,7 @@ UNITS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
 TEENS = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen']
 TENS = ['ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
 SCALES = ['hundred', 'thousand', 'million', 'billion', 'trillion']
-ORDINAL_WORDS = {'oh': 0, 'first': 1, 'second': 2, 'third': 3, 'fifth': 5, 'eighth': 8, 'ninth': 9, 'twelfth': 12}
+ORDINAL_WORDS = {'oh': 0, 'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5, 'sixth': 6, 'seventh': 7, 'eighth': 8, 'ninth': 9, 'twelfth': 12}
 ORDINAL_ENDINGS = [('ieth', 'y'), ('th', '')]
 
 
@@ -90,11 +90,13 @@ class TextPreprocessor:
 
 
 class Text2Digits():
-    def __init__(self, excluded_chars="", similarity_threshold=0.5):
+    def __init__(self, excluded_chars="", similarity_threshold=0.5, convert_ordinals=True, add_ordinal_ending=False):
         self.excluded = excluded_chars
-        self.accepted = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
+        self.accepted = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -"
         self.numwords = dict()
         self.threshold = similarity_threshold
+        self.convert_ordinals = convert_ordinals
+        self.add_ordinal_ending = add_ordinal_ending
 
         self.numwords['and'] = (1, 0)
         for idx, word in enumerate(UNITS): self.numwords[word] = (1, idx)
@@ -148,17 +150,20 @@ class Text2Digits():
     """
 
     def convert_to_digits(self, textnum, spell_check=False):
-        textnum = textnum.replace('-', ' ')
+        if self.convert_ordinals:
+            # split ordinals to calculate the number. Example: 'twenty-first'
+            textnum = textnum.replace('-', ' ')
         current = result = word_count = 0
         curstring = ''
         onnumber = lastunit = lastscale = is_tens = False
         last_number_glue = ''
+        ordinal_ending = ''
 
         for word, glue in TextPreprocessor.split_glues(textnum):
             word_count += 1
             word_original = word
             word = word.lower()
-            if word in ORDINAL_WORDS:
+            if self.convert_ordinals and word in ORDINAL_WORDS:
                 scale, increment = (1, ORDINAL_WORDS[word])
                 current = current * scale + increment
                 if scale > 100:
@@ -167,12 +172,15 @@ class Text2Digits():
                 onnumber = True
                 last_number_glue = glue
                 lastunit = lastscale = is_tens = False
+                if self.add_ordinal_ending:
+                    ordinal_ending = word[-2:]
 
             else:
                 # Handle endings
-                for ending, replacement in ORDINAL_ENDINGS:
-                    if word.endswith(ending) and (word[:-len(ending)] in UNITS or word[:-len(ending)] in TENS):
-                        word = "%s%s" % (word[:-len(ending)], replacement)
+                if self.convert_ordinals:
+                    for ending, replacement in ORDINAL_ENDINGS:
+                        if word.endswith(ending) and (word[:-len(ending)] in UNITS or word[:-len(ending)] in TENS):
+                            word = "%s%s" % (word[:-len(ending)], replacement)
 
                 # Handle misspelt words
                 if spell_check:
@@ -184,7 +192,8 @@ class Text2Digits():
                 if (not self.is_numword(word)) or (word == 'and' and not lastscale):
                     if onnumber:
                         # Flush the current number we are building
-                        curstring += repr(result + current) + last_number_glue
+                        curstring += repr(result + current) + ordinal_ending + last_number_glue
+                        ordinal_ending = ''
                     curstring += word_original + glue
 
                     result = current = 0
@@ -230,7 +239,7 @@ class Text2Digits():
 
         # Flush remaining number (in case the last word of a sentence corresponds to a number)
         if onnumber:
-            curstring += repr(result + current) + last_number_glue
+            curstring += repr(result + current) + ordinal_ending + last_number_glue
 
         return curstring
 
@@ -260,53 +269,3 @@ class Text2Digits():
             return False
         return True
 
-
-if __name__ == '__main__':
-    t2n = Text2Digits(similarity_threshold=0.7)
-    tests = [
-        "A random string",
-        "I am thirty six years old with a child that is four. I would like to get him four cars!",
-        "I was born in twenty ten",
-        "I was born in nineteen sixty four",
-        "I am the fourth cousin",
-        "I am twenty nine",
-        "it was twenty ten and was negative thirty seven degrees",
-        "thirty twenty one",
-        "one thousand six hundred sixty six",
-        "one thousand and six hundred and sixty six",
-        "sixteen sixty six",
-        "eleven hundred twelve",
-        "Sixteen and seven",
-        "twenty ten and twenty one",
-        "I was born in nineteen ninety two and am twenty six years old!",
-        "three forty five",
-        "nineteen",
-        "ninteen",
-        "nintteen",
-        "ninten",
-        "ninetin",
-        "ninteen nineti niine",
-        "forty two,  two. 0.5-1",
-        "sixty six hundred",
-        "one two zero three",
-        "one fifty one twenty one",
-        "twenty nineteen",
-        "sixty six ten",
-        "ten thousand one",
-        "ten thousand fifty",
-        "ten thousand",
-        "hundred thousand",
-        "one hundred thousand",
-        "fifty five thousand",
-        "fifty five twelve",
-        "asb is twenty two altogether fifty five twelve parrot",
-        "fifty one thirty three",
-        "thirty eleven",
-        "twenty eleven zero three",
-        "zero twelve",
-        "twelve zero nine",
-        "twenty eleven three"
-    ]
-
-    for test in tests:
-        print("\"" + test + "\" -> '" + t2n.convert(test, spell_check=True) + "'")
