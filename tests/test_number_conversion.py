@@ -100,9 +100,38 @@ def test_others(input_text, expected):
     ('forty-third', False, False, 'forty-third'),
     ('forty-third', True, True, '43rd'),
     # ordinal ending 'th'
+    ('tenth', True, False, '10'),
+    ('tenth', False, False, 'tenth'),
+    ('tenth', True, True, '10th'),
     ('fifty-fourth', True, False, '54'),
     ('fifty-fourth', False, False, 'fifty-fourth'),
     ('fifty-fourth', True, True, '54th'),
+    # ordinal ending 'ieth'
+    ('twentieth', True, False, '20'),
+    ('twentieth', False, False, 'twentieth'),
+    ('twentieth', True, True, '20th'),
+    ('seventieth', True, False, '70'),
+    ('seventieth', False, False, 'seventieth'),
+    ('seventieth', True, True, '70th'),
+    # 100, 1000, 10000, etc.
+    ('hundredth', True, False, '100'),
+    ('hundredth', False, False, 'hundredth'),
+    ('hundredth', True, True, '100th'),
+    ('seven-hundredth', True, False, '700'),
+    ('seven-hundredth', False, False, 'seven-hundredth'),
+    ('seven-hundredth', True, True, '700th'),
+    ('thousandth', True, False, '1000'),
+    ('thousandth', False, False, 'thousandth'),
+    ('thousandth', True, True, '1000th'),
+    ('ten-thousandth', True, False, '10000'),
+    ('ten-thousandth', False, False, 'ten-thousandth'),
+    ('ten-thousandth', True, True, '10000th'),
+    ('two-hundred-thousandth', True, False, '200000'),
+    ('two-hundred-thousandth', False, False, 'two-hundred-thousandth'),
+    ('two-hundred-thousandth', True, True, '200000th'),
+    ('millionth', True, False, '1000000'),
+    ('millionth', False, False, 'millionth'),
+    ('millionth', True, True, '1000000th'),
 ])
 def test_ordinal_conversion_switch_disabled(ordinal_input, convert_ordinals, add_ordinal_ending, expected):
 

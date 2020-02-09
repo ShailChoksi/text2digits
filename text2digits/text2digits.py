@@ -3,7 +3,7 @@ import math
 
 UNITS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
 TEENS = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen']
-TENS = ['ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
+TENS = ['ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', 'hundred', 'thousand', 'million', 'billion']
 SCALES = ['hundred', 'thousand', 'million', 'billion', 'trillion']
 ORDINAL_WORDS = {'oh': 0, 'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5, 'sixth': 6, 'seventh': 7, 'eighth': 8, 'ninth': 9, 'twelfth': 12}
 ORDINAL_ENDINGS = [('ieth', 'y'), ('th', '')]
@@ -179,8 +179,12 @@ class Text2Digits():
                 # Handle endings
                 if self.convert_ordinals:
                     for ending, replacement in ORDINAL_ENDINGS:
-                        if word.endswith(ending) and (word[:-len(ending)] in UNITS or word[:-len(ending)] in TENS):
-                            word = "%s%s" % (word[:-len(ending)], replacement)
+                        if word.endswith(ending):
+                            word_modified = "%s%s" % (word[:-len(ending)], replacement)
+                            if word_modified in UNITS or word_modified in TENS:
+                                if self.add_ordinal_ending:
+                                    ordinal_ending = word[-2:]
+                                word = word_modified
 
                 # Handle misspelt words
                 if spell_check:
