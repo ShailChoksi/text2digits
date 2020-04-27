@@ -164,3 +164,33 @@ def test_ordinal_multi_occurence_and_cardinal():
     result = t2d_default.convert(input_str)
     assert result == "she finished 64th on race number 6 and he finished 42nd"
 
+
+@pytest.mark.parametrize("input_text,expected_output", [
+    ('its 07', 'its 07'),
+    ('its 007', 'its 007'),
+    ('its 15:01', 'its 15:01'),
+    ('when I was eleven, I used to sleep at 23:01', 'when I was 11, I used to sleep at 23:01'),
+    ('when I was eleven, I used to sleep at 02:01', 'when I was 11, I used to sleep at 02:01'),
+    ('at 00:00 I will turn 15', 'at 00:00 I will turn 15'),
+    ('at 03:03 I will turn 15', 'at 03:03 I will turn 15'),
+])
+def test_zero_padding_is_kept(input_text, expected_output):
+    # gh-26: padded numbers are not respected, breaking time format
+    t2d_default = text2digits.Text2Digits()
+    result = t2d_default.convert(input_text)
+    assert result == expected_output
+
+
+@pytest.mark.parametrize("input_text,expected_output", [
+    ('its 07', 'its 7'),
+    ('its 007', 'its 7'),
+    ('its 15:01', 'its 15:1'),
+    ('when I was eleven, I used to sleep at 23:01', 'when I was 11, I used to sleep at 23:1'),
+    ('when I was eleven, I used to sleep at 2:1', 'when I was 11, I used to sleep at 2:1'),
+    ('at 00:00 I will turn 15', 'at 0:0 I will turn 15'),
+    ('at 03:03 I will turn 15', 'at 3:3 I will turn 15'),
+])
+def test_zero_padding_is_not_kept(input_text, expected_output):
+    t2d_default = text2digits.Text2Digits(keep_zero_padding=False)
+    result = t2d_default.convert(input_text)
+    assert result == expected_output

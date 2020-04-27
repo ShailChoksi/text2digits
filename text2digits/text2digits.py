@@ -90,13 +90,21 @@ class TextPreprocessor:
 
 
 class Text2Digits():
-    def __init__(self, excluded_chars="", similarity_threshold=0.5, convert_ordinals=True, add_ordinal_ending=False):
+    def __init__(
+            self,
+            excluded_chars="",
+            similarity_threshold=0.5,
+            convert_ordinals=True,
+            add_ordinal_ending=False,
+            keep_zero_padding=True):
+
         self.excluded = excluded_chars
         self.accepted = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -"
         self.numwords = dict()
         self.threshold = similarity_threshold
         self.convert_ordinals = convert_ordinals
         self.add_ordinal_ending = add_ordinal_ending
+        self.keep_zero_padding = keep_zero_padding
 
         self.numwords['and'] = (1, 0)
         for idx, word in enumerate(UNITS): self.numwords[word] = (1, idx)
@@ -158,7 +166,7 @@ class Text2Digits():
         onnumber = lastunit = lastscale = is_tens = False
         last_number_glue = ''
         ordinal_ending = ''
-
+        last_number_zero_padded_len = 0
         for word, glue in TextPreprocessor.split_glues(textnum):
             word_count += 1
             word_original = word
@@ -191,12 +199,12 @@ class Text2Digits():
                     matched_num = TextPreprocessor.get_match(word, self.numwords.keys(), self.threshold)
                     if matched_num is not None:
                         word = matched_num
-                
+
                 # Is not a number word
                 if (not self.is_numword(word)) or (word == 'and' and not lastscale):
                     if onnumber:
                         # Flush the current number we are building
-                        curstring += repr(result + current) + ordinal_ending + last_number_glue
+                        curstring += flush_number(result, current, ordinal_ending, last_number_glue, last_number_zero_padded_len, self.keep_zero_padding)
                         ordinal_ending = ''
                     curstring += word_original + glue
 
@@ -211,6 +219,7 @@ class Text2Digits():
                     scale, increment = self.from_numword(word)
                     onnumber = True
                     last_number_glue = glue
+                    last_number_zero_padded_len = count_padded_field_length(word, '0')
 
                     # For cases such as twenty ten -> 2010, twenty nineteen -> 2019
                     if is_tens and word not in (UNITS + SCALES):
@@ -243,7 +252,7 @@ class Text2Digits():
 
         # Flush remaining number (in case the last word of a sentence corresponds to a number)
         if onnumber:
-            curstring += repr(result + current) + ordinal_ending + last_number_glue
+            curstring += flush_number(result, current, ordinal_ending, last_number_glue, last_number_zero_padded_len, self.keep_zero_padding)
 
         return curstring
 
@@ -269,7 +278,26 @@ class Text2Digits():
 
             if math.isnan(x) or math.isinf(x):
                 return False
-        except:
+        except Exception:
             return False
         return True
+
+
+def flush_number(result, current, ordinal_ending, last_number_glue, last_number_zero_padded_len, keep_padding):
+    number_str = repr(result + current)
+
+    if keep_padding:
+        number_str = number_str.zfill(last_number_zero_padded_len)
+
+    return number_str + ordinal_ending + last_number_glue
+
+
+def count_padded_field_length(text, character):
+    '''
+    Return the field width if it's padded otherwise return zero
+    '''
+    if text.startswith(character):
+        return len(text)
+
+    return 0
 
