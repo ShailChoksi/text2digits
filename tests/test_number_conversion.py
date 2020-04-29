@@ -201,3 +201,18 @@ def test_ordinal_multi_occurrence_and_cardinal():
     t2d_default = text2digits.Text2Digits(convert_ordinals=True, add_ordinal_ending=True)
     result = t2d_default.convert(input_str)
     assert result == "she finished 64th on race number 6 and he finished 42nd"
+
+
+@pytest.mark.parametrize("input_text,expected_output", [
+    ('its 07', 'its 07'),
+    ('its 007', 'its 007'),
+    ('its 15:01', 'its 15:01'),
+    ('when I was eleven, I used to sleep at 23:01', 'when I was 11, I used to sleep at 23:01'),
+    ('when I was eleven, I used to sleep at 02:01', 'when I was 11, I used to sleep at 02:01'),
+    ('at 00:00 I will turn 15', 'at 00:00 I will turn 15'),
+    ('at 03:03 I will turn 15', 'at 03:03 I will turn 15'),
+])
+def test_time_formats(input_text, expected_output):
+    t2d_default = text2digits.Text2Digits()
+    result = t2d_default.convert(input_text)
+    assert result == expected_output

@@ -76,9 +76,9 @@ class Token(object):
             self.type = WordType.SCALES
         elif self._word in Token.CONJUNCTION:
             self.type = WordType.CONJUNCTION
-        elif re.search(r'\d+\.\d*|\d*\.\d+', self._word):
+        elif re.search(r'^\d+\.\d*|\d*\.\d+$', self._word):
             self.type = WordType.LITERAL_FLOAT
-        elif re.search(r'\d+', self._word):
+        elif re.search(r'^\d+$', self._word):
             self.type = WordType.LITERAL_INT
         else:
             self.type = WordType.OTHER
