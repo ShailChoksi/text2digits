@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="text2digits",
-    version="0.0.9",
+    version="0.1.0",
     author="Shail Choksi",
     author_email="choksishail@gmail.com",
     description="A small library to convert text numbers to digits in a string",
