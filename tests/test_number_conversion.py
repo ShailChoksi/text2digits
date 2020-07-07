@@ -217,3 +217,24 @@ def test_time_formats(input_text, expected_output):
     t2d_default = text2digits.Text2Digits()
     result = t2d_default.convert(input_text)
     assert result == expected_output
+
+
+@pytest.mark.parametrize("input_text,expected_output", [
+    ('it is january or jan for short', 'it is 1 or 1 for short'),
+    ('it is february or feb for short', 'it is 2 or 2 for short'),
+    ('it is march or mar for short', 'it is 3 or 3 for short'),
+    ('it is april or apr for short', 'it is 4 or 4 for short'),
+    ('it is may or may for short', 'it is 5 or 5 for short'),
+    ('it is june or jun for short', 'it is 6 or 6 for short'),
+    ('it is july or jul for short', 'it is 7 or 7 for short'),
+    ('it is august or aug for short', 'it is 8 or 8 for short'),
+    ('it is september or sep for short', 'it is 9 or 9 for short'),
+    ('it is october or oct for short', 'it is 10 or 10 for short'),
+    ('it is november or nov for short', 'it is 11 or 11 for short'),
+    ('it is december or dec for short', 'it is 12 or 12 for short'),
+    ('i was born on july four, 1776', 'i was born on 7 4, 1776'),
+])
+def test_month_formats(input_text, expected_output):
+    t2d_default = text2digits.Text2Digits()
+    result = t2d_default.convert(input_text)
+    assert result == expected_output
