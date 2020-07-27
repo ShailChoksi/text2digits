@@ -29,6 +29,8 @@ def test_str_unchanged_if_no_numbers(input_text):
     ("I am the fourth cousin", "I am the 4 cousin"),
     ("forty-two", "42"),
     ("forty_two", "42"),
+    ("six hundred seventy five thousand word book", "675000 word book"),
+    ("one million two hundred twenty nine thousand three hundred and eighty six", "1229386"),
 ])
 def test_positive_integers(input_text, expected):
     t2d_default = text2digits.Text2Digits()
