@@ -154,7 +154,8 @@ class ConcatenationRule(Rule):
 
         # Find all numeric tokens
         while i < len(tokens):
-            if tokens[i].type in self.valid_types:
+            if tokens[i].type in self.valid_types and not tokens[i].is_ordinal():
+                # Avoid ordinals. Example: 'look at the second one' should convert into '2nd 1' not '21'
                 i += 1
             else:
                 break
