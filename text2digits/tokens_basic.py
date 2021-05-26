@@ -22,6 +22,7 @@ class Token(object):
              'nineteen']
     TENS = ['twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
     SCALES = ['hundred', 'thousand', 'million', 'billion', 'trillion']
+    SCALE_VALUES = [100, 1000, 1000000, 1000000000, 1000000000000] # used for has_large_scale
     CONJUNCTION = ['and']
     ORDINAL_WORDS = {'oh': 'zero', 'first': 'one', 'second': 'two', 'third': 'three', 'fifth': 'five',
                      'eighth': 'eight', 'ninth': 'nine', 'twelfth': 'twelve'}
@@ -96,7 +97,8 @@ class Token(object):
         if self.type == WordType.SCALES:
             return True
         elif self.type in [WordType.LITERAL_INT, WordType.LITERAL_FLOAT]:
-            return Decimal(self._word) >= 100 and Decimal(self._word) % 10 == 0
+            # whether the value is a scale (e.g. 100, 1000, 1000000, etc.)
+            return Decimal(self._word) in self.SCALE_VALUES
         else:
             return False
 

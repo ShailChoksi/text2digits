@@ -116,6 +116,7 @@ def test_spelling_correction(input_text, expected):
     ("1.2345 hundred", "123.45"),
     ("twenty 1.0", "20 1.0"),
     ("100 and two", "102"),
+    ('6 2020', '6 2020'),
 ])
 def test_number_literals(input_text, expected):
     t2d_default = text2digits.Text2Digits()
