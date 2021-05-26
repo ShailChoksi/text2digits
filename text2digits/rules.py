@@ -119,15 +119,16 @@ class CombinationRule(Rule):
         result = Decimal(0)
         last_glue = ''
         prev_scale = 1
+        all_scales = [token.scale() for token in tokens]
 
-        for token in tokens:
+        for index, token in enumerate(tokens):
             assert token.type != WordType.OTHER, 'Invalid token type (only numbers are allowed here)'
 
             if token.has_large_scale():
                 # Multiply the scale at least with a value of 1 (and not 0)
                 current = max(1, current)
 
-            if token.scale() < prev_scale:
+            if token.scale() < prev_scale and prev_scale > max(all_scales[index:]):
                 # Flush the result when switching from a larger to a smaller scale
                 # e.g. one thousand *FLUSH* six hundred *FLUSH* sixty six
                 result += current
@@ -140,7 +141,6 @@ class CombinationRule(Rule):
         result += current
 
         return CombinedToken(tokens, result, last_glue)
-
 
 class ConcatenationRule(Rule):
     """
