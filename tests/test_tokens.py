@@ -3,10 +3,10 @@ from text2digits.tokens_basic import WordType, Token
 
 
 def test_lexer():
-    example = 'one hundred 2.2 50 eleven forty twenty and two and bus third and'
+    example = 'one hundred 2.2 50 eleven forty twenty and two and bus third and lakh crore arab kharab'
     types = [WordType.UNITS, WordType.SCALES, WordType.LITERAL_FLOAT, WordType.LITERAL_INT, WordType.TEENS,
              WordType.TENS, WordType.TENS, WordType.CONJUNCTION, WordType.UNITS, WordType.OTHER, WordType.OTHER,
-             WordType.UNITS, WordType.OTHER]
+             WordType.UNITS, WordType.CONJUNCTION, WordType.SCALES, WordType.SCALES, WordType.SCALES, WordType.SCALES]
 
     t2d = text2digits.Text2Digits()
     tokens = t2d._lex(example)

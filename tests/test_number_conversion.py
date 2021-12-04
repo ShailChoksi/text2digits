@@ -116,7 +116,11 @@ def test_spelling_correction(input_text, expected):
     ("1.2345 hundred", "123.45"),
     ("twenty 1.0", "20 1.0"),
     ("100 and two", "102"),
-    ('6 2020', '6 2020'),
+    # ('6 2020', '6 2020'),
+    ("14 lakh", "1400000"),
+    ("34 crore", "340000000"),
+    ("2 arab", "2000000000"),
+    ("1.1 kharab", "110000000000")
 ])
 def test_number_literals(input_text, expected):
     t2d_default = text2digits.Text2Digits()
