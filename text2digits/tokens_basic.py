@@ -22,7 +22,8 @@ class Token(object):
              'nineteen']
     TENS = ['twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
     SCALES = ['hundred', 'thousand', 'million', 'billion', 'trillion']
-    SCALE_VALUES = [100, 1000, 1000000, 1000000000, 1000000000000] # used for has_large_scale
+    SCALE_VALUES = [100, 1_000, 10_000, 1_000_000, 10_000_000, 1_000_000_000, 100_000_000_000, 1_000_000_000_000]  # used for has_large_scale
+    INDIAN_SCALES = ['lakh', 'crore', 'arab', 'kharab']
     CONJUNCTION = ['and']
     ORDINAL_WORDS = {'oh': 'zero', 'first': 'one', 'second': 'two', 'third': 'three', 'fifth': 'five',
                      'eighth': 'eight', 'ninth': 'nine', 'twelfth': 'twelve'}
@@ -39,6 +40,8 @@ class Token(object):
         numwords[word] = (1, (idx + 2) * 10)
     for idx, word in enumerate(SCALES):
         numwords[word] = (10 ** (idx * 3 or 2), 0)
+    for idx, word in enumerate(INDIAN_SCALES):
+        numwords[word] = (10 ** (5 + idx * 2), 0)
 
     def __init__(self, word: str, glue: str):
         """
@@ -73,7 +76,7 @@ class Token(object):
             self.type = WordType.TEENS
         elif self._word in Token.TENS:
             self.type = WordType.TENS
-        elif self._word in Token.SCALES:
+        elif self._word in Token.SCALES or self._word in Token.INDIAN_SCALES:
             self.type = WordType.SCALES
         elif self._word in Token.CONJUNCTION:
             self.type = WordType.CONJUNCTION
@@ -97,7 +100,6 @@ class Token(object):
         if self.type == WordType.SCALES:
             return True
         elif self.type in [WordType.LITERAL_INT, WordType.LITERAL_FLOAT]:
-            # whether the value is a scale (e.g. 100, 1000, 1000000, etc.)
             return Decimal(self._word) in self.SCALE_VALUES
         else:
             return False

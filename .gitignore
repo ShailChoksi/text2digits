@@ -2,3 +2,4 @@ build/
 dist/
 text2digits.egg-info/
 text2digits_careless25.egg-info/
+__pycache__/
