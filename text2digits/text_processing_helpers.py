@@ -64,14 +64,21 @@ def split_glues(text: str, separator=r'\s+|(?<=\D)[.,;:\-_](?=\D)') -> Iterator[
              the whitespace next to it. If no glue is left, an empty string
              is returned.
     """
-    while True:
-        match = re.search(separator, text)
+
+    separator_pat = re.compile(separator)
+    word_pat = re.compile(r'\w+')
+
+    while text:
+        match = separator_pat.search(text)
         if not match:
             # The last word does not have a glue
-            yield text, ''
+            last_words = word_pat.findall(text)
+            assert len(last_words) == 1, ((text), last_words)
+            yield last_words[0], ''
             break
-
+            
         yield text[:match.start()], match.group()
 
         # Proceed with the remaining string
         text = text[match.end():]
+
