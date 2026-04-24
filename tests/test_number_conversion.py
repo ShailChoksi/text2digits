@@ -147,6 +147,24 @@ def test_decimal_inputs_do_not_crash(input_text, expected):
     assert result == expected
 
 
+@pytest.mark.parametrize("input_text,expected", [
+    # End-of-sentence punctuation should not stop a trailing number from converting
+    ("I am twenty nine.", "I am 29."),
+    ("She was born in nineteen twenty.", "She was born in 1920."),
+    ("I was born in nineteen ninety two.", "I was born in 1992."),
+    ("He is thirty six.", "He is 36."),
+    ("Really; thirty six", "Really; 36"),
+    # Multi-sentence inputs still work
+    ("I am thirty. She is forty.", "I am 30. She is 40."),
+    # Trailing punctuation-only token (e.g., ellipsis in source text)
+    ("thirty six...", "36..."),
+])
+def test_trailing_sentence_punctuation(input_text, expected):
+    t2d_default = text2digits.Text2Digits()
+    result = t2d_default.convert(input_text)
+    assert result == expected
+
+
 @pytest.mark.parametrize("ordinal_input,convert_ordinals,add_ordinal_ending,expected", [
     ("third", True, False, "3"),
     ("third", False, False, "third"),

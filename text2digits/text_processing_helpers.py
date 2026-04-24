@@ -51,7 +51,7 @@ def find_similar_word(word: str, collection: List, threshold: float) -> str:
     return match
 
 
-def split_glues(text: str, separator=r'\s+|(?<=\D)[.,;:\-_](?=\D)') -> Iterator[str]:
+def split_glues(text: str, separator=r'\s+|(?<=\D)[.,;:\-_](?=\D|$)') -> Iterator[str]:
     """
     Splits a string and preserves the glue, i.e. the separator fragments.
     This is useful when words of a sentence should be processed while still
