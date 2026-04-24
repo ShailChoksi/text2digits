@@ -66,17 +66,17 @@ def split_glues(text: str, separator=r'\s+|(?<=\D)[.,;:\-_](?=\D)') -> Iterator[
     """
 
     separator_pat = re.compile(separator)
-    word_pat = re.compile(r'\w+')
 
     while text:
         match = separator_pat.search(text)
         if not match:
-            # The last word does not have a glue
-            last_words = word_pat.findall(text)
-            assert len(last_words) == 1, ((text), last_words)
-            yield last_words[0], ''
+            # No separator remains; the whole tail is a single word with no
+            # trailing glue. The tail is kept verbatim (including characters
+            # like '.', '-', '%', etc.) so downstream tokenization can decide
+            # whether it is a numeric literal or an opaque OTHER token.
+            yield text, ''
             break
-            
+
         yield text[:match.start()], match.group()
 
         # Proceed with the remaining string

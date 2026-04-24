@@ -128,6 +128,25 @@ def test_number_literals(input_text, expected):
     assert result == expected
 
 
+@pytest.mark.parametrize("input_text,expected", [
+    # Bare decimals should pass through unchanged
+    ("1.2345", "1.2345"),
+    ("42.5", "42.5"),
+    ("0.5-1", "0.5-1"),
+    # Decimals with unit suffixes (e.g. percent) should not crash and should pass through
+    ("99.999%", "99.999%"),
+    ("the rate is 99.999% approx", "the rate is 99.999% approx"),
+    ("the 99.9% case", "the 99.9% case"),
+    # Decimals mixed with word numbers
+    ("twenty two 3.14", "22 3.14"),
+    ("3.14 is pi", "3.14 is pi"),
+])
+def test_decimal_inputs_do_not_crash(input_text, expected):
+    t2d_default = text2digits.Text2Digits()
+    result = t2d_default.convert(input_text)
+    assert result == expected
+
+
 @pytest.mark.parametrize("ordinal_input,convert_ordinals,add_ordinal_ending,expected", [
     ("third", True, False, "3"),
     ("third", False, False, "third"),
