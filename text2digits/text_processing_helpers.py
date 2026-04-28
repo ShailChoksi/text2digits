@@ -45,9 +45,9 @@ def find_similar_word(word: str, collection: List, threshold: float) -> str:
     for item in collection:
         similarity = bigram_similarity(word, item)
 
-        # The similarity must be above the threshold and if this is true for
-        # multiple words, we take the most similar one
-        if similarity > max(max_similarity, threshold):
+        # The similarity must meet or exceed the threshold and if this is true
+        # for multiple words, we take the most similar one
+        if similarity >= threshold and similarity > max_similarity:
             match = item
             max_similarity = similarity
 
