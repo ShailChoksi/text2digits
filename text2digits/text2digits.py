@@ -1,8 +1,21 @@
-from typing import List
+from typing import List, Tuple
 
 from text2digits.rules import CombinationRule, ConcatenationRule
 from text2digits.text_processing_helpers import find_similar_word, split_glues
 from text2digits.tokens_basic import Token, WordType
+
+# Token types that produce a numeric output after the rule passes.
+_NUMERIC_TYPES = frozenset(
+    {
+        WordType.REPLACED,
+        WordType.LITERAL_INT,
+        WordType.LITERAL_FLOAT,
+        WordType.UNITS,
+        WordType.TEENS,
+        WordType.TENS,
+        WordType.SCALES,
+    }
+)
 
 
 class Text2Digits:
@@ -119,17 +132,74 @@ class Text2Digits:
 
             tokens = new_tokens
 
-        # Combine the tokens back to a string (with special handling of ordinal numbers)
-        text = ""
-        for token in tokens:
-            if token.is_ordinal() and not self.convert_ordinals:
-                text += token.word_raw
-            else:
-                text += token.text()
-                if token.is_ordinal() and self.add_ordinal_ending:
-                    assert token.ordinal_ending is not None  # is_ordinal() guarantees this
-                    text += token.ordinal_ending
+        return self._tokens_to_string(tokens)
 
-            text += token.glue
+    def _consume_numeric(self, tokens: List, i: int) -> Tuple[str, str, int]:
+        """
+        Emit the text for a numeric token at index *i*, also consuming any
+        immediately following "point <numeric>" decimal pattern.
+
+        Returns ``(text, glue, tokens_consumed)`` where *glue* is the trailing
+        whitespace/separator that should be appended after the emitted text.
+        """
+        token = tokens[i]
+        tok_text = token.text()
+        if token.is_ordinal() and self.add_ordinal_ending:
+            assert token.ordinal_ending is not None  # is_ordinal() guarantees this
+            tok_text += token.ordinal_ending
+
+        j = i + 1
+        if (
+            j < len(tokens)
+            and tokens[j].type == WordType.DECIMAL_SEPARATOR
+            and j + 1 < len(tokens)
+            and tokens[j + 1].type in _NUMERIC_TYPES
+        ):
+            right_text = tokens[j + 1].text()
+            return tok_text + "." + right_text, tokens[j + 1].glue, 3
+
+        return tok_text, token.glue, 1
+
+    def _tokens_to_string(self, tokens: List) -> str:
+        """
+        Reconstruct the final string from the processed token list, applying
+        negation (``negative``/``minus`` → unary ``-``) and decimal-word
+        (``X point Y`` → ``X.Y``) post-processing.
+        """
+        text = ""
+        i = 0
+        while i < len(tokens):
+            token = tokens[i]
+
+            # Unconverted ordinals are emitted verbatim
+            if token.is_ordinal() and not self.convert_ordinals:
+                text += token.word_raw + token.glue
+                i += 1
+                continue
+
+            # Negation: absorb "negative"/"minus" into the immediately following numeric
+            if token.type == WordType.NEGATION:
+                j = i + 1
+                if j < len(tokens) and tokens[j].type in _NUMERIC_TYPES:
+                    num_text, glue, consumed = self._consume_numeric(tokens, j)
+                    text += "-" + num_text + glue
+                    i = j + consumed
+                    continue
+                # Not followed by a number — fall through and emit as a plain word
+                text += token.word_raw + token.glue
+                i += 1
+                continue
+
+            # Numeric tokens: check for "X point Y" decimal-word pattern
+            if token.type in _NUMERIC_TYPES:
+                num_text, glue, consumed = self._consume_numeric(tokens, i)
+                text += num_text + glue
+                i += consumed
+                continue
+
+            # Everything else (OTHER, CONJUNCTION, DECIMAL_SEPARATOR without a
+            # preceding numeric, …) passes through unchanged
+            text += token.text() + token.glue
+            i += 1
 
         return text
