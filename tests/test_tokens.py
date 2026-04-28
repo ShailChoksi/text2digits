@@ -1,4 +1,5 @@
 import pytest
+from decimal import Decimal
 from text2digits import text2digits
 from text2digits.tokens_basic import WordType, Token
 
@@ -52,7 +53,36 @@ class TestOtherTokenValueScale:
         assert Token('42', '').value() == Decimal(42)
 
     def test_scale_valid_for_numword_types(self):
-        from decimal import Decimal
         assert Token('twelve', '').scale() == Decimal(1)
         assert Token('hundred', '').scale() == Decimal(100)
         assert Token('100', '').scale() == Decimal(100)
+
+
+class TestOhToken:
+    """'oh' is a spoken alias for zero (phone numbers) and must NOT be an ordinal."""
+
+    def test_oh_type_is_units(self):
+        assert Token('oh', '').type == WordType.UNITS
+
+    def test_oh_is_not_ordinal(self):
+        assert Token('oh', '').is_ordinal() is False
+
+    def test_oh_value_is_zero(self):
+        assert Token('oh', '').value() == Decimal(0)
+
+    def test_oh_scale_is_one(self):
+        assert Token('oh', '').scale() == Decimal(1)
+
+    def test_oh_does_not_collide_with_units_index(self):
+        """'oh' must have value 0, not 10 (what appending to UNITS list would give)."""
+        assert Token('oh', '').value() == Decimal(0)
+        assert 'oh' not in Token.UNITS
+
+    def test_phone_number_concatenation(self):
+        """'four oh seven' should produce '407', not '4 0 7'."""
+        t2d = text2digits.Text2Digits()
+        assert t2d.convert('four oh seven') == '407'
+
+    def test_oh_case_insensitive(self):
+        assert Token('Oh', '').type == WordType.UNITS
+        assert Token('OH', '').type == WordType.UNITS
