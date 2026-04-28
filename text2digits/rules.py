@@ -69,7 +69,7 @@ class CombinationRule(Rule):
             # Same for the second considered token. However, it is a bit more complicated in this case since we may reach the end of the string
             second = tokens[consumed_tokens + consumed_conjunctions + 1] if consumed_tokens < len(tokens) - consumed_conjunctions - 1 else NoneToken()
             if second.type == WordType.CONJUNCTION:
-                consumed_conjunctions = 1
+                consumed_conjunctions += 1
                 second = tokens[consumed_tokens + consumed_conjunctions + 1] if consumed_tokens < len(tokens) - consumed_conjunctions - 1 else NoneToken()
 
             # Now the tricky part: we need to decide how many tokens we need to combine
