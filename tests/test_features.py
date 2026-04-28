@@ -9,6 +9,7 @@ from text2digits.tokens_basic import Token, WordType
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def convert(text: str, **kwargs) -> str:
     return Text2Digits(**kwargs).convert(text)
 
@@ -75,9 +76,7 @@ class TestNegationConversion:
         assert convert("negative 3.14") == "-3.14"
 
     def test_negative_in_sentence(self):
-        assert convert("the temperature was negative thirty seven degrees") == (
-            "the temperature was -37 degrees"
-        )
+        assert convert("the temperature was negative thirty seven degrees") == ("the temperature was -37 degrees")
 
     def test_negative_not_before_number_is_preserved(self):
         """'negative' not followed by a number should be kept as-is."""

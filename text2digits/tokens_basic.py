@@ -20,7 +20,7 @@ class WordType(enum.Enum):
     SCALES = 6
     CONJUNCTION = 7
     REPLACED = 8
-    NEGATION = 9           # "negative", "minus"
+    NEGATION = 9  # "negative", "minus"
     DECIMAL_SEPARATOR = 10  # "point"
 
 
@@ -184,7 +184,6 @@ class Token:
         raise ValueError(f"Cannot compute value for token of type {self.type!r} (word={self.word_raw!r})")
 
     def scale(self) -> Decimal:
-
         """
         Returns the scale of a token (e.g. hundred -> 100).
         """
