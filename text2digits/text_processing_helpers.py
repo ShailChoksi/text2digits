@@ -28,7 +28,10 @@ def bigram_similarity(word1: str, word2: str) -> float:
 
     similar = [word for word in pairs1 if word in pairs2]
 
-    return float(len(similar)) / float(max(len(pairs1), len(pairs2)))
+    denominator = max(len(pairs1), len(pairs2))
+    if denominator == 0:
+        return 1.0 if word1 == word2 else 0.0
+    return float(len(similar)) / float(denominator)
 
 
 def find_similar_word(word: str, collection: List, threshold: float) -> str:
