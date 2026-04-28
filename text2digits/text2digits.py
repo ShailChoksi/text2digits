@@ -15,9 +15,9 @@ class Text2Digits:
         >>> from text2digits import text2digits
         >>> t2d = text2digits.Text2Digits()
         >>> t2d.convert("twenty ten and twenty one")
-        >>> 2010 and 21
+        '2010 and 21'
 
-        :param similarity_threshold: Used for spelling correction. It specifies the minimal similarity in the range [0, 1] of a word to one of the number words. 0 inidcates that every other word is similar and 1 requires a perfect match, i.e. no spelling correction is performed with a value of 1.
+        :param similarity_threshold: Used for spelling correction. It specifies the minimal similarity in the range [0, 1] of a word to one of the number words. 0 indicates that every other word is similar and 1 requires a perfect match, i.e. no spelling correction is performed with a value of 1.
         :param convert_ordinals: Whether to convert ordinal numbers (e.g. third --> 3).
         :param add_ordinal_ending: Whether to add the ordinal ending to the converted ordinal number (e.g. twentieth --> 20th). Implies convert_ordinals=True.
         """
