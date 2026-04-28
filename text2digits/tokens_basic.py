@@ -1,6 +1,7 @@
 import enum
 import re
 from decimal import Decimal
+from typing import Optional
 
 
 class WordType(enum.Enum):
@@ -44,7 +45,7 @@ class Token(object):
         numwords[word] = (10 ** (5 + idx * 2), 0)
     numwords['oh'] = (1, 0)  # alias for zero; kept separate to avoid index-10 collision in UNITS enumeration
 
-    def __init__(self, word: str, glue: str):
+    def __init__(self, word: str, glue: str) -> None:
         """
         Represents a word in the text with some additional knowledge about the word (e.g. information about its type).
 
@@ -152,8 +153,8 @@ class NoneToken(object):
     Special token type which serves as a mock-up for a word which does not exist in the input.
     """
 
-    def __init__(self):
-        self.type = None
+    def __init__(self) -> None:
+        self.type: Optional[WordType] = None
 
     def is_ordinal(self) -> bool:
         return False
