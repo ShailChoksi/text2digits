@@ -25,7 +25,7 @@ class Token(object):
     SCALE_VALUES = [100, 1_000, 10_000, 1_000_000, 10_000_000, 1_000_000_000, 100_000_000_000, 1_000_000_000_000]  # used for has_large_scale
     INDIAN_SCALES = ['lakh', 'crore', 'arab', 'kharab']
     CONJUNCTION = ['and']
-    ORDINAL_WORDS = {'oh': 'zero', 'first': 'one', 'second': 'two', 'third': 'three', 'fifth': 'five',
+    ORDINAL_WORDS = {'first': 'one', 'second': 'two', 'third': 'three', 'fifth': 'five',
                      'eighth': 'eight', 'ninth': 'nine', 'twelfth': 'twelve'}
     ORDINAL_ENDINGS = [('ieth', 'y'), ('th', '')]
 
@@ -42,6 +42,7 @@ class Token(object):
         numwords[word] = (10 ** (idx * 3 or 2), 0)
     for idx, word in enumerate(INDIAN_SCALES):
         numwords[word] = (10 ** (5 + idx * 2), 0)
+    numwords['oh'] = (1, 0)  # alias for zero; kept separate to avoid index-10 collision in UNITS enumeration
 
     def __init__(self, word: str, glue: str):
         """
@@ -70,7 +71,9 @@ class Token(object):
                     self._word = replaced
 
         # Assign a type to each token (from specific to general)
-        if self._word in Token.UNITS:
+        if self._word == 'oh':
+            self.type = WordType.UNITS
+        elif self._word in Token.UNITS:
             self.type = WordType.UNITS
         elif self._word in Token.TEENS:
             self.type = WordType.TEENS
