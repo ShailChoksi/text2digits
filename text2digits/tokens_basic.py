@@ -115,6 +115,7 @@ class Token(object):
                 return Decimal(self._word)
         elif self.type != WordType.OTHER:
             return Decimal(Token.numwords[self._word][1])
+        raise ValueError(f"Cannot compute value for token of type {self.type!r} (word={self.word_raw!r})")
 
     def scale(self) -> Decimal:
         """
@@ -127,6 +128,7 @@ class Token(object):
                 return Decimal(1)
         elif self.type != WordType.OTHER:
             return Decimal(Token.numwords[self._word][0])
+        raise ValueError(f"Cannot compute scale for token of type {self.type!r} (word={self.word_raw!r})")
 
     def text(self) -> str:
         """
