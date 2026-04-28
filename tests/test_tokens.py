@@ -86,3 +86,37 @@ class TestOhToken:
     def test_oh_case_insensitive(self):
         assert Token('Oh', '').type == WordType.UNITS
         assert Token('OH', '').type == WordType.UNITS
+
+
+class TestOrdinalEndingBreak:
+    """A word matching the first ordinal-ending rule must not be re-processed by the second."""
+
+    def test_twentieth_resolves_to_twenty(self):
+        # 'twentieth' matches ('ieth', 'y') → 'twenty'; the loop must stop there.
+        # Without the break the loop would continue and try ('th', '') on 'twenty',
+        # find 'twen' which is not in numwords, but mutate _word to 'twen' first.
+        t = Token('twentieth', '')
+        assert t._word == 'twenty'
+        assert t.is_ordinal()
+
+    def test_thirtieth_resolves_to_thirty(self):
+        t = Token('thirtieth', '')
+        assert t._word == 'thirty'
+        assert t.is_ordinal()
+
+    def test_fortieth_resolves_to_forty(self):
+        t = Token('fortieth', '')
+        assert t._word == 'forty'
+        assert t.is_ordinal()
+
+    def test_ieth_match_does_not_fall_through_to_th(self):
+        """After an 'ieth' match the token type must be TENS, not OTHER."""
+        t = Token('twentieth', '')
+        assert t.type == WordType.TENS
+
+    def test_plain_th_ordinal_still_works(self):
+        """Words that only match the 'th' rule are unaffected by the break."""
+        t = Token('sixth', '')
+        assert t._word == 'six'
+        assert t.is_ordinal()
+        assert t.type == WordType.UNITS
