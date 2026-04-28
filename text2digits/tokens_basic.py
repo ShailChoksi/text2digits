@@ -24,7 +24,29 @@ class Token(object):
              'nineteen')
     TENS = ('twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety')
     SCALES = ('hundred', 'thousand', 'million', 'billion', 'trillion')
-    SCALE_VALUES = frozenset({100, 1_000, 10_000, 1_000_000, 10_000_000, 1_000_000_000, 100_000_000_000, 1_000_000_000_000})  # used for has_large_scale
+    # Literal numeric tokens whose value equals one of these are treated as large-scale
+    # multipliers by has_large_scale(), enabling expressions like "10000 million".
+    # This set is intentionally hand-curated — do NOT derive it mechanically from
+    # SCALES + INDIAN_SCALES: that approach drops 10_000 (ten-thousand, a valid
+    # combined scale) and would silently break inputs such as "10000 million".
+    #   100            → hundred
+    #   1_000          → thousand
+    #   10_000         → ten thousand (combined scale, not in SCALES directly)
+    #   1_000_000      → million
+    #   10_000_000     → ten million (lakh-equivalent combined scale)
+    #   1_000_000_000  → billion / arab
+    #   100_000_000_000 → hundred billion / kharab
+    #   1_000_000_000_000 → trillion
+    SCALE_VALUES = frozenset({
+        100,               # hundred
+        1_000,             # thousand
+        10_000,            # ten thousand (combined; intentionally kept)
+        1_000_000,         # million
+        10_000_000,        # ten million / lakh-range
+        1_000_000_000,     # billion / arab
+        100_000_000_000,   # hundred billion / kharab
+        1_000_000_000_000, # trillion
+    })
     INDIAN_SCALES = ('lakh', 'crore', 'arab', 'kharab')
     CONJUNCTION = frozenset({'and'})
     ORDINAL_WORDS = types.MappingProxyType({'first': 'one', 'second': 'two', 'third': 'three', 'fifth': 'five',
