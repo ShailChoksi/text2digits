@@ -20,6 +20,8 @@ class WordType(enum.Enum):
     SCALES = 6
     CONJUNCTION = 7
     REPLACED = 8
+    NEGATION = 9           # "negative", "minus"
+    DECIMAL_SEPARATOR = 10  # "point"
 
 
 class Token:
@@ -66,6 +68,8 @@ class Token:
     )
     INDIAN_SCALES = ("lakh", "crore", "arab", "kharab")
     CONJUNCTION = frozenset({"and"})
+    NEGATION_WORDS = frozenset({"negative", "minus"})
+    DECIMAL_SEPARATOR_WORDS = frozenset({"point"})
     ORDINAL_WORDS = types.MappingProxyType(
         {
             "first": "one",
@@ -138,6 +142,10 @@ class Token:
             self.type = WordType.SCALES
         elif self._word in Token.CONJUNCTION:
             self.type = WordType.CONJUNCTION
+        elif self._word in Token.NEGATION_WORDS:
+            self.type = WordType.NEGATION
+        elif self._word in Token.DECIMAL_SEPARATOR_WORDS:
+            self.type = WordType.DECIMAL_SEPARATOR
         elif re.fullmatch(r"\d+\.\d*|\d*\.\d+", self._word):
             self.type = WordType.LITERAL_FLOAT
         elif re.fullmatch(r"\d+", self._word):
@@ -171,11 +179,12 @@ class Token:
                 return Decimal(0)
             else:
                 return Decimal(self._word)
-        elif self.type != WordType.OTHER:
+        elif self.type not in (WordType.OTHER, WordType.NEGATION, WordType.DECIMAL_SEPARATOR):
             return Decimal(Token.numwords[self._word].value)
         raise ValueError(f"Cannot compute value for token of type {self.type!r} (word={self.word_raw!r})")
 
     def scale(self) -> Decimal:
+
         """
         Returns the scale of a token (e.g. hundred -> 100).
         """
@@ -184,7 +193,7 @@ class Token:
                 return Decimal(self._word)
             else:
                 return Decimal(1)
-        elif self.type != WordType.OTHER:
+        elif self.type not in (WordType.OTHER, WordType.NEGATION, WordType.DECIMAL_SEPARATOR):
             return Decimal(Token.numwords[self._word].scale)
         raise ValueError(f"Cannot compute scale for token of type {self.type!r} (word={self.word_raw!r})")
 
@@ -192,7 +201,14 @@ class Token:
         """
         Returns the textual (digit) representation of the token (e.g. twelve -> 12).
         """
-        if self.type in [WordType.LITERAL_INT, WordType.LITERAL_FLOAT, WordType.CONJUNCTION, WordType.OTHER]:
+        if self.type in [
+            WordType.LITERAL_INT,
+            WordType.LITERAL_FLOAT,
+            WordType.CONJUNCTION,
+            WordType.OTHER,
+            WordType.NEGATION,
+            WordType.DECIMAL_SEPARATOR,
+        ]:
             # Keep the original representation of the literal in case there were e.g. some thousand separators
             return self.word_raw
         elif self.type == WordType.SCALES:

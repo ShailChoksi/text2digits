@@ -71,7 +71,7 @@ def test_years(input_text, expected):
 @pytest.mark.parametrize(
     "input_text, expected",
     [
-        ("it was twenty ten and was negative thirty seven degrees", "it was 2010 and was negative 37 degrees"),
+        ("it was twenty ten and was negative thirty seven degrees", "it was 2010 and was -37 degrees"),
         (
             "I was born in nineteen ninety two and I am twenty six years old!",
             "I was born in 1992 and I am 26 years old!",
