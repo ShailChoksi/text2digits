@@ -1,3 +1,4 @@
+import pytest
 from text2digits import text2digits
 from text2digits.rules import CombinationRule, ConcatenationRule, MatchType
 from text2digits.tokens_basic import Token, WordType
@@ -45,6 +46,38 @@ class TestMatchType:
         # Call match() twice and verify we get consistent token counts,
         # which indirectly proves the shared enum is not broken by re-creation.
         assert rule.match(tokens) == rule.match(tokens)
+
+
+class TestActionPreconditions:
+    """action() must raise ValueError for invalid input, not silently pass under -O."""
+
+    def test_combination_action_raises_for_empty_list(self):
+        with pytest.raises(ValueError, match="CombinationRule"):
+            CombinationRule().action([])
+
+    def test_combination_action_raises_for_single_token(self):
+        with pytest.raises(ValueError, match="CombinationRule"):
+            CombinationRule().action([Token('two', '')])
+
+    def test_combination_action_error_includes_count(self):
+        with pytest.raises(ValueError, match="1"):
+            CombinationRule().action([Token('two', '')])
+
+    def test_concatenation_action_raises_for_empty_list(self):
+        with pytest.raises(ValueError, match="ConcatenationRule"):
+            ConcatenationRule().action([])
+
+    def test_concatenation_action_accepts_single_token(self):
+        """ConcatenationRule requires >= 1 token; a single token must succeed."""
+        token = Token('two', '')
+        result = ConcatenationRule().action([token])
+        assert result is not None
+
+    def test_combination_action_succeeds_with_two_tokens(self):
+        """Sanity-check that valid input still works after the assert→ValueError change."""
+        tokens = [Token('two', ' '), Token('hundred', '')]
+        result = CombinationRule().action(tokens)
+        assert result is not None
 
 
 class TestConjunctionHandling:
