@@ -142,7 +142,7 @@ def test_spelling_correction(input_text, expected):
         ("1.2345 hundred", "123.45"),
         ("twenty 1.0", "20 1.0"),
         ("100 and two", "102"),
-        # ('6 2020', '6 2020'),
+        ("6 2020", "6 2020"),
         ("14 lakh", "1400000"),
         ("34 crore", "340000000"),
         ("2 arab", "2000000000"),

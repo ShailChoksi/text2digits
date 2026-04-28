@@ -5,22 +5,36 @@ from text2digits.rules import CombinationRule, ConcatenationRule, MatchType
 from text2digits.tokens_basic import Token
 
 
-def test_parer_combination_rule():
-    cases = [("twenty one thousand three hundred", 5), ("twenty one", 2), ("hundred twenty one", 3)]
+def test_parser_combination_rule():
+    # (input, expected_match_count, expected_text)
+    cases = [
+        ("twenty one thousand three hundred", 5, "21300"),
+        ("twenty one", 2, "21"),
+        ("hundred twenty one", 3, "121"),
+    ]
     rule = CombinationRule()
     t2d = text2digits.Text2Digits()
 
-    for example, number in cases:
-        assert rule.match(t2d._lex(example)) == number
+    for example, expected_count, expected_text in cases:
+        tokens = t2d._lex(example)
+        assert rule.match(tokens) == expected_count
+        assert rule.action(tokens[:expected_count]).text() == expected_text
 
 
-def test_parer_concatenation_rule():
-    cases = [("one ten", 2), ("three", 1), ("nineteen", 1)]
+def test_parser_concatenation_rule():
+    # (input, expected_match_count, expected_text)
+    cases = [
+        ("one ten", 2, "110"),
+        ("three", 1, "3"),
+        ("nineteen", 1, "19"),
+    ]
     rule = ConcatenationRule()
     t2d = text2digits.Text2Digits()
 
-    for example, number in cases:
-        assert rule.match(t2d._lex(example)) == number
+    for example, expected_count, expected_text in cases:
+        tokens = t2d._lex(example)
+        assert rule.match(tokens) == expected_count
+        assert rule.action(tokens[:expected_count]).text() == expected_text
 
 
 class TestMatchType:
