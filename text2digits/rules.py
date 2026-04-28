@@ -114,7 +114,8 @@ class CombinationRule(Rule):
         return consumed_tokens
 
     def action(self, tokens: List[Token]) -> CombinedToken:
-        assert len(tokens) >= 2, 'At least two tokens are required'
+        if len(tokens) < 2:
+            raise ValueError(f"CombinationRule.action requires at least 2 tokens, got {len(tokens)}")
 
         current = Decimal(0)
         result = Decimal(0)
@@ -164,7 +165,8 @@ class ConcatenationRule(Rule):
         return i
 
     def action(self, tokens: List[Union[Token, CombinedToken]]) -> ConcatenatedToken:
-        assert len(tokens) >= 1, 'At least one token is required'
+        if len(tokens) < 1:
+            raise ValueError(f"ConcatenationRule.action requires at least 1 token, got {len(tokens)}")
 
         last_glue = ''
         result = ''
