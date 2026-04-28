@@ -69,6 +69,7 @@ class Token(object):
                 if replaced in Token.numwords:
                     self.ordinal_ending = self._word[-2:]
                     self._word = replaced
+                    break
 
         # Assign a type to each token (from specific to general)
         if self._word == 'oh':
