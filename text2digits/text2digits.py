@@ -33,6 +33,8 @@ class Text2Digits(object):
         if self.add_ordinal_ending:
             self.convert_ordinals = True
 
+        self._rules = [CombinationRule(), ConcatenationRule()]
+
     def convert(self, text: str) -> str:
         """
         Converts all number representations to digits.
@@ -90,10 +92,8 @@ class Text2Digits(object):
         :param tokens: The tokenized input string.
         :return: The transformed input string.
         """
-        rules = [CombinationRule(), ConcatenationRule()]
-
         # Apply each rule to process the tokens
-        for rule in rules:
+        for rule in self._rules:
             new_tokens = []
             i = 0
 
