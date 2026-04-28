@@ -5,7 +5,6 @@ import pytest
 from text2digits.text2digits import Text2Digits
 from text2digits.tokens_basic import Token, WordType
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
