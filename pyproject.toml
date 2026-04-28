@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "text2digits"
+version = "0.1.1"
+description = "A small library to convert text numbers to digits in a string"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.7"
+keywords = ["text2numbers", "words2numbers", "digits", "numbers"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
+lint = ["ruff", "mypy"]
+dev  = ["pytest", "pytest-cov", "ruff", "mypy"]
+
+[project.urls]
+Source  = "https://github.com/careless25/text2digits"
+Funding = "https://www.paypal.me/careless25"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+# ---------------------------------------------------------------------------
+# ruff
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py38"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long — handled by formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]  # assert False is fine in tests
+
+# ---------------------------------------------------------------------------
+# mypy
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.9"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_return_any = false
+
+# ---------------------------------------------------------------------------
+# pytest / coverage
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["text2digits"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80

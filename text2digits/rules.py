@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from decimal import Decimal
 from typing import List, Union
 
-from text2digits.tokens_basic import WordType, Token, NoneToken
+from text2digits.tokens_basic import NoneToken, Token, WordType
 from text2digits.tokens_rules import CombinedToken, ConcatenatedToken, RuleToken
 
 
@@ -46,15 +46,22 @@ class CombinationRule(Rule):
     """
 
     def __init__(self):
-        self.valid_types = [WordType.LITERAL_INT, WordType.LITERAL_FLOAT, WordType.UNITS, WordType.TEENS, WordType.TENS, WordType.SCALES]
+        self.valid_types = [
+            WordType.LITERAL_INT,
+            WordType.LITERAL_FLOAT,
+            WordType.UNITS,
+            WordType.TEENS,
+            WordType.TENS,
+            WordType.SCALES,
+        ]
 
-    def match(self, tokens: List[Token]) -> int:
+    def match(self, tokens: List[Token]) -> int:  # type: ignore[override]
         # We need at least two tokens to combine something
         if len(tokens) < 2:
             return 0
 
         last_match = None
-        last_scale = 0
+        last_scale: Decimal = Decimal(0)
         consumed_tokens = 0
         while consumed_tokens < len(tokens):
             consumed_conjunctions = 0
@@ -67,10 +74,18 @@ class CombinationRule(Rule):
                 first = tokens[consumed_tokens + consumed_conjunctions]
 
             # Same for the second considered token. However, it is a bit more complicated in this case since we may reach the end of the string
-            second = tokens[consumed_tokens + consumed_conjunctions + 1] if consumed_tokens < len(tokens) - consumed_conjunctions - 1 else NoneToken()
+            second = (
+                tokens[consumed_tokens + consumed_conjunctions + 1]
+                if consumed_tokens < len(tokens) - consumed_conjunctions - 1
+                else NoneToken()
+            )
             if second.type == WordType.CONJUNCTION:
                 consumed_conjunctions += 1
-                second = tokens[consumed_tokens + consumed_conjunctions + 1] if consumed_tokens < len(tokens) - consumed_conjunctions - 1 else NoneToken()
+                second = (
+                    tokens[consumed_tokens + consumed_conjunctions + 1]
+                    if consumed_tokens < len(tokens) - consumed_conjunctions - 1
+                    else NoneToken()
+                )
 
             # Now the tricky part: we need to decide how many tokens we need to combine
             if last_match != MatchType.DUAL_HUNDRED and first.type == WordType.TENS and second.type == WordType.UNITS:
@@ -81,6 +96,7 @@ class CombinationRule(Rule):
                 # e.g. 2.1 hundred -> consume both (result 210)
                 consumed_tokens += 2
                 last_match = MatchType.DUAL_SCALE
+                assert isinstance(second, Token)  # has_large_scale() is False for NoneToken
                 last_scale = second.scale()
             elif first.has_large_scale() and (second.type in self.valid_types or last_match == MatchType.DUAL_HUNDRED):
                 # e.g. *hundred two -> consume hundred
@@ -113,22 +129,22 @@ class CombinationRule(Rule):
 
         return consumed_tokens
 
-    def action(self, tokens: List[Token]) -> CombinedToken:
+    def action(self, tokens: List[Token]) -> CombinedToken:  # type: ignore[override]
         if len(tokens) < 2:
             raise ValueError(f"CombinationRule.action requires at least 2 tokens, got {len(tokens)}")
 
         current = Decimal(0)
         result = Decimal(0)
-        last_glue = ''
-        prev_scale = 1
+        last_glue = ""
+        prev_scale: Decimal = Decimal(1)
         all_scales = [token.scale() for token in tokens]
 
         for index, token in enumerate(tokens):
-            assert token.type != WordType.OTHER, 'Invalid token type (only numbers are allowed here)'
+            assert token.type != WordType.OTHER, "Invalid token type (only numbers are allowed here)"
 
             if token.has_large_scale():
                 # Multiply the scale at least with a value of 1 (and not 0)
-                current = max(1, current)
+                current = max(Decimal(1), current)
 
             if token.scale() < prev_scale and prev_scale > max(all_scales[index:]):
                 # Flush the result when switching from a larger to a smaller scale
@@ -144,14 +160,16 @@ class CombinationRule(Rule):
 
         return CombinedToken(tokens, result, last_glue)
 
+
 class ConcatenationRule(Rule):
     """
     This rule handles all the "year cases" like twenty twenty where we simply concatenate the numbers together. The numbers are already transformed to digits by the CombinationRule.
     """
+
     def __init__(self):
         self.valid_types = [WordType.UNITS, WordType.TEENS, WordType.TENS, WordType.SCALES, WordType.REPLACED]
 
-    def match(self, tokens: List[Union[Token, CombinedToken]]) -> int:
+    def match(self, tokens: List[Union[Token, CombinedToken]]) -> int:  # type: ignore[override]
         i = 0
 
         # Find all numeric tokens
@@ -164,15 +182,15 @@ class ConcatenationRule(Rule):
 
         return i
 
-    def action(self, tokens: List[Union[Token, CombinedToken]]) -> ConcatenatedToken:
+    def action(self, tokens: List[Union[Token, CombinedToken]]) -> ConcatenatedToken:  # type: ignore[override]
         if len(tokens) < 1:
             raise ValueError(f"ConcatenationRule.action requires at least 1 token, got {len(tokens)}")
 
-        last_glue = ''
-        result = ''
+        last_glue = ""
+        result = ""
 
         for token in tokens:
             result += token.text()
             last_glue = token.glue
 
-        return ConcatenatedToken(tokens, result, last_glue)
+        return ConcatenatedToken(tokens, result, last_glue)  # type: ignore[arg-type]

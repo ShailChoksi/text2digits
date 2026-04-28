@@ -1,4 +1,3 @@
-import pytest
 from text2digits.text_processing_helpers import bigram_similarity, find_similar_word
 
 

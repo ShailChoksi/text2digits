@@ -1,11 +1,11 @@
 from typing import List
 
-from text2digits.tokens_basic import Token, WordType
 from text2digits.rules import CombinationRule, ConcatenationRule
-from text2digits.text_processing_helpers import split_glues, find_similar_word
+from text2digits.text_processing_helpers import find_similar_word, split_glues
+from text2digits.tokens_basic import Token, WordType
 
 
-class Text2Digits(object):
+class Text2Digits:
     def __init__(self, similarity_threshold=1.0, convert_ordinals=True, add_ordinal_ending=False):
         """
         This class can be used to convert text representations of numbers to digits. That is, it replaces all occurrences of numbers (e.g. forty-two) to the digit representation (e.g. 42).
@@ -24,7 +24,7 @@ class Text2Digits(object):
         self.similarity_threshold = similarity_threshold
 
         if self.similarity_threshold < 0 or self.similarity_threshold > 1:
-            raise ValueError('The similarity_threshold must be in the range [0, 1]')
+            raise ValueError("The similarity_threshold must be in the range [0, 1]")
 
         self.convert_ordinals = convert_ordinals
         self.add_ordinal_ending = add_ordinal_ending
@@ -107,7 +107,7 @@ class Text2Digits(object):
                     n_match = rule.match(tokens[i:])
                     if n_match > 0:
                         # ... and then merge these tokens into a new one (e.g. a token representing the digit)
-                        token = rule.action(tokens[i:i + n_match])
+                        token = rule.action(tokens[i : i + n_match])
                         new_tokens.append(token)
                         i += n_match
                     else:
@@ -120,13 +120,14 @@ class Text2Digits(object):
             tokens = new_tokens
 
         # Combine the tokens back to a string (with special handling of ordinal numbers)
-        text = ''
+        text = ""
         for token in tokens:
             if token.is_ordinal() and not self.convert_ordinals:
                 text += token.word_raw
             else:
                 text += token.text()
                 if token.is_ordinal() and self.add_ordinal_ending:
+                    assert token.ordinal_ending is not None  # is_ordinal() guarantees this
                     text += token.ordinal_ending
 
             text += token.glue

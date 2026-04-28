@@ -1,5 +1,12 @@
+from importlib.metadata import PackageNotFoundError, version
+
 from text2digits.text2digits import Text2Digits
 
 name = "text2digits"
-__version__ = "0.0.9"
-__all__ = ['Text2Digits']
+
+try:
+    __version__ = version("text2digits")
+except PackageNotFoundError:
+    __version__ = "unknown"
+
+__all__ = ["Text2Digits"]

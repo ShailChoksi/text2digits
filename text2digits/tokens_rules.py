@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from decimal import Decimal
 from typing import List
 
-from text2digits.tokens_basic import WordType, Token
+from text2digits.tokens_basic import Token, WordType
 
 
 class RuleToken(ABC):
@@ -19,7 +19,7 @@ class RuleToken(ABC):
         self.ordinal_ending = self.original_tokens[-1].ordinal_ending
 
         # Build a representation of the original word consisting of all tokens
-        self.word_raw = ''
+        self.word_raw = ""
         for i, token in enumerate(self.original_tokens):
             self.word_raw += token.word_raw
             if i < len(self.original_tokens) - 1:
