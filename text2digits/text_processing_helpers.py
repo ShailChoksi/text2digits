@@ -40,7 +40,7 @@ def find_similar_word(word: str, collection: Iterable[str], threshold: float) ->
     to the specified word.
     """
     match = None
-    max_similarity = 0
+    max_similarity: float = 0.0
 
     for item in collection:
         similarity = bigram_similarity(word, item)
@@ -54,7 +54,7 @@ def find_similar_word(word: str, collection: Iterable[str], threshold: float) ->
     return match
 
 
-def split_glues(text: str, separator: str = r'\s+|(?<=\D)[.,;:\-_](?=\D|$)') -> Iterator[Tuple[str, str]]:
+def split_glues(text: str, separator: str = r"\s+|(?<=\D)[.,;:\-_](?=\D|$)") -> Iterator[Tuple[str, str]]:
     """
     Splits a string and preserves the glue, i.e. the separator fragments.
     This is useful when words of a sentence should be processed while still
@@ -77,11 +77,10 @@ def split_glues(text: str, separator: str = r'\s+|(?<=\D)[.,;:\-_](?=\D|$)') -> 
             # trailing glue. The tail is kept verbatim (including characters
             # like '.', '-', '%', etc.) so downstream tokenization can decide
             # whether it is a numeric literal or an opaque OTHER token.
-            yield text, ''
+            yield text, ""
             break
 
-        yield text[:match.start()], match.group()
+        yield text[: match.start()], match.group()
 
         # Proceed with the remaining string
-        text = text[match.end():]
-
+        text = text[match.end() :]

@@ -22,13 +22,23 @@ class WordType(enum.Enum):
     REPLACED = 8
 
 
-class Token(object):
+class Token:
     # Static init code (only executed once and not for each token instance)
-    UNITS = ('zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine')
-    TEENS = ('ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen',
-             'nineteen')
-    TENS = ('twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety')
-    SCALES = ('hundred', 'thousand', 'million', 'billion', 'trillion')
+    UNITS = ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
+    TEENS = (
+        "ten",
+        "eleven",
+        "twelve",
+        "thirteen",
+        "fourteen",
+        "fifteen",
+        "sixteen",
+        "seventeen",
+        "eighteen",
+        "nineteen",
+    )
+    TENS = ("twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
+    SCALES = ("hundred", "thousand", "million", "billion", "trillion")
     # Literal numeric tokens whose value equals one of these are treated as large-scale
     # multipliers by has_large_scale(), enabling expressions like "10000 million".
     # This set is intentionally hand-curated — do NOT derive it mechanically from
@@ -42,25 +52,34 @@ class Token(object):
     #   1_000_000_000  → billion / arab
     #   100_000_000_000 → hundred billion / kharab
     #   1_000_000_000_000 → trillion
-    SCALE_VALUES = frozenset({
-        100,               # hundred
-        1_000,             # thousand
-        10_000,            # ten thousand (combined; intentionally kept)
-        1_000_000,         # million
-        10_000_000,        # ten million / lakh-range
-        1_000_000_000,     # billion / arab
-        100_000_000_000,   # hundred billion / kharab
-        1_000_000_000_000, # trillion
-    })
-    INDIAN_SCALES = ('lakh', 'crore', 'arab', 'kharab')
-    CONJUNCTION = frozenset({'and'})
-    ORDINAL_WORDS = types.MappingProxyType({'first': 'one', 'second': 'two', 'third': 'three', 'fifth': 'five',
-                                            'eighth': 'eight', 'ninth': 'nine', 'twelfth': 'twelve'})
-    ORDINAL_ENDINGS = (('ieth', 'y'), ('th', ''))
+    SCALE_VALUES = frozenset(
+        {
+            100,  # hundred
+            1_000,  # thousand
+            10_000,  # ten thousand (combined; intentionally kept)
+            1_000_000,  # million
+            10_000_000,  # ten million / lakh-range
+            1_000_000_000,  # billion / arab
+            100_000_000_000,  # hundred billion / kharab
+            1_000_000_000_000,  # trillion
+        }
+    )
+    INDIAN_SCALES = ("lakh", "crore", "arab", "kharab")
+    CONJUNCTION = frozenset({"and"})
+    ORDINAL_WORDS = types.MappingProxyType(
+        {
+            "first": "one",
+            "second": "two",
+            "third": "three",
+            "fifth": "five",
+            "eighth": "eight",
+            "ninth": "nine",
+            "twelfth": "twelve",
+        }
+    )
+    ORDINAL_ENDINGS = (("ieth", "y"), ("th", ""))
 
-    _numwords_build = {
-        'and': NumEntry(scale=1, value=0)
-    }
+    _numwords_build = {"and": NumEntry(scale=1, value=0)}
     for idx, word in enumerate(UNITS):
         _numwords_build[word] = NumEntry(scale=1, value=idx)
     for idx, word in enumerate(TEENS):
@@ -71,7 +90,9 @@ class Token(object):
         _numwords_build[word] = NumEntry(scale=10 ** (idx * 3 or 2), value=0)
     for idx, word in enumerate(INDIAN_SCALES):
         _numwords_build[word] = NumEntry(scale=10 ** (5 + idx * 2), value=0)
-    _numwords_build['oh'] = NumEntry(scale=1, value=0)  # alias for zero; kept separate to avoid index-10 collision in UNITS enumeration
+    _numwords_build["oh"] = NumEntry(
+        scale=1, value=0
+    )  # alias for zero; kept separate to avoid index-10 collision in UNITS enumeration
     numwords = types.MappingProxyType(_numwords_build)
     del _numwords_build
 
@@ -86,24 +107,26 @@ class Token(object):
         self.glue = glue
 
         # Basic preprocessing of the word to find the type
-        self._word = word.lower().replace(',', '')
+        self._word = word.lower().replace(",", "")
 
         # Try to match ordinal numbers and then treat them as cardinal ones
-        self.ordinal_ending = None  # We need to keep a reference to the original ending in case the user wants to preserve it
+        self.ordinal_ending = (
+            None  # We need to keep a reference to the original ending in case the user wants to preserve it
+        )
         if self._word in Token.ORDINAL_WORDS:
             self.ordinal_ending = self._word[-2:]
             self._word = Token.ORDINAL_WORDS[self._word]
 
         for ending, replacement in Token.ORDINAL_ENDINGS:
             if self._word.endswith(ending):
-                replaced = self._word[:-len(ending)] + replacement
+                replaced = self._word[: -len(ending)] + replacement
                 if replaced in Token.numwords:
                     self.ordinal_ending = self._word[-2:]
                     self._word = replaced
                     break
 
         # Assign a type to each token (from specific to general)
-        if self._word == 'oh':
+        if self._word == "oh":
             self.type = WordType.UNITS
         elif self._word in Token.UNITS:
             self.type = WordType.UNITS
@@ -115,15 +138,15 @@ class Token(object):
             self.type = WordType.SCALES
         elif self._word in Token.CONJUNCTION:
             self.type = WordType.CONJUNCTION
-        elif re.fullmatch(r'\d+\.\d*|\d*\.\d+', self._word):
+        elif re.fullmatch(r"\d+\.\d*|\d*\.\d+", self._word):
             self.type = WordType.LITERAL_FLOAT
-        elif re.fullmatch(r'\d+', self._word):
+        elif re.fullmatch(r"\d+", self._word):
             self.type = WordType.LITERAL_INT
         else:
             self.type = WordType.OTHER
 
     def __repr__(self) -> str:
-        return f'{self._word} ({self.type})'
+        return f"{self._word} ({self.type})"
 
     def is_ordinal(self) -> bool:
         return self.ordinal_ending is not None
@@ -178,7 +201,7 @@ class Token(object):
             return str(self.value())
 
 
-class NoneToken(object):
+class NoneToken:
     """
     Special token type which serves as a mock-up for a word which does not exist in the input.
     """

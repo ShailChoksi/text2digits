@@ -1,11 +1,12 @@
 import pytest
+
 from text2digits import text2digits
 from text2digits.rules import CombinationRule, ConcatenationRule, MatchType
-from text2digits.tokens_basic import Token, WordType
+from text2digits.tokens_basic import Token
 
 
 def test_parer_combination_rule():
-    cases = [('twenty one thousand three hundred', 5), ('twenty one', 2), ('hundred twenty one', 3)]
+    cases = [("twenty one thousand three hundred", 5), ("twenty one", 2), ("hundred twenty one", 3)]
     rule = CombinationRule()
     t2d = text2digits.Text2Digits()
 
@@ -14,7 +15,7 @@ def test_parer_combination_rule():
 
 
 def test_parer_concatenation_rule():
-    cases = [('one ten', 2), ('three', 1), ('nineteen', 1)]
+    cases = [("one ten", 2), ("three", 1), ("nineteen", 1)]
     rule = ConcatenationRule()
     t2d = text2digits.Text2Digits()
 
@@ -26,7 +27,8 @@ class TestMatchType:
     def test_match_type_is_module_level(self):
         """MatchType must be importable at module level, not recreated per call."""
         import text2digits.rules as rules_module
-        assert hasattr(rules_module, 'MatchType'), "MatchType should be a module-level name"
+
+        assert hasattr(rules_module, "MatchType"), "MatchType should be a module-level name"
 
     def test_match_type_members(self):
         assert MatchType.SINGLE.value == 0
@@ -36,13 +38,13 @@ class TestMatchType:
 
     def test_dual_scale_typo_is_gone(self):
         """The old typo DUAl_SCALE must no longer exist."""
-        assert not hasattr(MatchType, 'DUAl_SCALE')
+        assert not hasattr(MatchType, "DUAl_SCALE")
 
     def test_match_type_identity_stable_across_calls(self):
         """The same MatchType class is used across repeated match() calls."""
         rule = CombinationRule()
         t2d = text2digits.Text2Digits()
-        tokens = t2d._lex('two hundred')
+        tokens = t2d._lex("two hundred")
         # Call match() twice and verify we get consistent token counts,
         # which indirectly proves the shared enum is not broken by re-creation.
         assert rule.match(tokens) == rule.match(tokens)
@@ -57,11 +59,11 @@ class TestActionPreconditions:
 
     def test_combination_action_raises_for_single_token(self):
         with pytest.raises(ValueError, match="CombinationRule"):
-            CombinationRule().action([Token('two', '')])
+            CombinationRule().action([Token("two", "")])
 
     def test_combination_action_error_includes_count(self):
         with pytest.raises(ValueError, match="1"):
-            CombinationRule().action([Token('two', '')])
+            CombinationRule().action([Token("two", "")])
 
     def test_concatenation_action_raises_for_empty_list(self):
         with pytest.raises(ValueError, match="ConcatenationRule"):
@@ -69,13 +71,13 @@ class TestActionPreconditions:
 
     def test_concatenation_action_accepts_single_token(self):
         """ConcatenationRule requires >= 1 token; a single token must succeed."""
-        token = Token('two', '')
+        token = Token("two", "")
         result = ConcatenationRule().action([token])
         assert result is not None
 
     def test_combination_action_succeeds_with_two_tokens(self):
         """Sanity-check that valid input still works after the assert→ValueError change."""
-        tokens = [Token('two', ' '), Token('hundred', '')]
+        tokens = [Token("two", " "), Token("hundred", "")]
         result = CombinationRule().action(tokens)
         assert result is not None
 
@@ -84,13 +86,13 @@ class TestConjunctionHandling:
     """consumed_conjunctions must accumulate with += when both first and second are conjunctions."""
 
     def _make_tokens(self, *words):
-        return [Token(w, ' ') for w in words]
+        return [Token(w, " ") for w in words]
 
     def test_single_conjunction_between_numbers(self):
         """Standard case: 'hundred and one' — conjunction between first and second."""
         rule = CombinationRule()
         t2d = text2digits.Text2Digits()
-        tokens = t2d._lex('hundred and one')
+        tokens = t2d._lex("hundred and one")
         assert rule.match(tokens) == 3
 
     def test_double_conjunction_does_not_reread_same_index(self):
@@ -108,10 +110,10 @@ class TestConjunctionHandling:
         rule = CombinationRule()
         # Build tokens manually to bypass _lex filtering
         tokens = [
-            Token('hundred', ' '),
-            Token('and', ' '),
-            Token('and', ' '),
-            Token('one', ''),
+            Token("hundred", " "),
+            Token("and", " "),
+            Token("and", " "),
+            Token("one", ""),
         ]
         # hundred consumed first, then the two conjunctions + one must not
         # corrupt the index or raise; we accept whatever count the logic produces
@@ -119,5 +121,7 @@ class TestConjunctionHandling:
         try:
             result = rule.match(tokens)
             assert isinstance(result, int)
-        except IndexError:
-            raise AssertionError("Double conjunction caused an IndexError — index was re-read instead of advanced")
+        except IndexError as exc:
+            raise AssertionError(
+                "Double conjunction caused an IndexError — index was re-read instead of advanced"
+            ) from exc

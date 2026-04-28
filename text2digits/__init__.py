@@ -1,4 +1,4 @@
-from importlib.metadata import version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError, version
 
 from text2digits.text2digits import Text2Digits
 
@@ -9,4 +9,4 @@ try:
 except PackageNotFoundError:
     __version__ = "unknown"
 
-__all__ = ['Text2Digits']
+__all__ = ["Text2Digits"]

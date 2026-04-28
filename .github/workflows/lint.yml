@@ -1,0 +1,32 @@
+name: Lint
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  lint:
+    name: ruff + mypy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install lint dependencies
+        run: pip install -e ".[lint]"
+
+      - name: ruff check (lint)
+        run: ruff check text2digits/ tests/
+
+      - name: ruff format (style)
+        run: ruff format --check text2digits/ tests/
+
+      - name: mypy (type check)
+        run: mypy text2digits/
