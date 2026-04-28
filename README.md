@@ -35,9 +35,16 @@ It can handle a variety of phrases. Spoken/Informal and formal language:
 
 I find this useful if using Alexa/Lex to convert audio to text and have to convert the text to digits.
 
-## Improvements/Issues
-- Still need to add support for decimal numbers
-- Need to add support for negative numbers
+## Known Limitations
+- **Negative numbers:** the word `"negative"` is preserved as-is rather than being converted to a unary minus (e.g. `"negative five"` → `"negative 5"`, not `"-5"`).
+- **Ordinal-to-digit conversion is lossy by default:** ordinal suffixes are dropped unless `add_ordinal_ending=True` is passed (e.g. `"third"` → `"3"`, not `"3rd"`).
+
+## What Is Supported
+- Decimal literals adjacent to scale words: `"2.5 thousand"` → `"2500"`, `"1.2345 hundred"` → `"123.45"`
+- Indian number system scales: lakh, crore, arab, kharab
+- Ordinals: first, second, …, twentieth, hundredth, thousandth, …
+- Spelling correction via `similarity_threshold` parameter
+- Year-style concatenation: `"twenty ten"` → `"2010"`
 
 ## Acknowledgements
 I have heavily used code from the SO answers from here: https://stackoverflow.com/questions/493174/is-there-a-way-to-convert-number-words-to-integers
