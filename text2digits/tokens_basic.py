@@ -2,7 +2,12 @@ import enum
 import re
 import types
 from decimal import Decimal
-from typing import Optional
+from typing import NamedTuple, Optional
+
+
+class NumEntry(NamedTuple):
+    scale: int
+    value: int
 
 
 class WordType(enum.Enum):
@@ -54,19 +59,19 @@ class Token(object):
     ORDINAL_ENDINGS = (('ieth', 'y'), ('th', ''))
 
     _numwords_build = {
-        'and': (1, 0)  # (scale, value)
+        'and': NumEntry(scale=1, value=0)
     }
     for idx, word in enumerate(UNITS):
-        _numwords_build[word] = (1, idx)
+        _numwords_build[word] = NumEntry(scale=1, value=idx)
     for idx, word in enumerate(TEENS):
-        _numwords_build[word] = (1, idx + 10)
+        _numwords_build[word] = NumEntry(scale=1, value=idx + 10)
     for idx, word in enumerate(TENS):
-        _numwords_build[word] = (1, (idx + 2) * 10)
+        _numwords_build[word] = NumEntry(scale=1, value=(idx + 2) * 10)
     for idx, word in enumerate(SCALES):
-        _numwords_build[word] = (10 ** (idx * 3 or 2), 0)
+        _numwords_build[word] = NumEntry(scale=10 ** (idx * 3 or 2), value=0)
     for idx, word in enumerate(INDIAN_SCALES):
-        _numwords_build[word] = (10 ** (5 + idx * 2), 0)
-    _numwords_build['oh'] = (1, 0)  # alias for zero; kept separate to avoid index-10 collision in UNITS enumeration
+        _numwords_build[word] = NumEntry(scale=10 ** (5 + idx * 2), value=0)
+    _numwords_build['oh'] = NumEntry(scale=1, value=0)  # alias for zero; kept separate to avoid index-10 collision in UNITS enumeration
     numwords = types.MappingProxyType(_numwords_build)
     del _numwords_build
 
@@ -144,7 +149,7 @@ class Token(object):
             else:
                 return Decimal(self._word)
         elif self.type != WordType.OTHER:
-            return Decimal(Token.numwords[self._word][1])
+            return Decimal(Token.numwords[self._word].value)
         raise ValueError(f"Cannot compute value for token of type {self.type!r} (word={self.word_raw!r})")
 
     def scale(self) -> Decimal:
@@ -157,7 +162,7 @@ class Token(object):
             else:
                 return Decimal(1)
         elif self.type != WordType.OTHER:
-            return Decimal(Token.numwords[self._word][0])
+            return Decimal(Token.numwords[self._word].scale)
         raise ValueError(f"Cannot compute scale for token of type {self.type!r} (word={self.word_raw!r})")
 
     def text(self) -> str:
