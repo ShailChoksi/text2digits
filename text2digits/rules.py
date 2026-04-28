@@ -33,6 +33,13 @@ class Rule(ABC):
         pass
 
 
+class MatchType(enum.Enum):
+    SINGLE = 0
+    SCALE = 1
+    DUAL_SCALE = 2
+    DUAL_HUNDRED = 3
+
+
 class CombinationRule(Rule):
     """
     This rule handles all the (complicated) cases where we actually need to calculate the output number (e.g. two hundred forty-two --> 2*100 + 40 + 2 = 242).
@@ -42,12 +49,6 @@ class CombinationRule(Rule):
         self.valid_types = [WordType.LITERAL_INT, WordType.LITERAL_FLOAT, WordType.UNITS, WordType.TEENS, WordType.TENS, WordType.SCALES]
 
     def match(self, tokens: List[Token]) -> int:
-        class MatchType(enum.Enum):
-            SINGLE = 0
-            SCALE = 1
-            DUAl_SCALE = 2
-            DUAL_HUNDRED = 3
-
         # We need at least two tokens to combine something
         if len(tokens) < 2:
             return 0
@@ -79,7 +80,7 @@ class CombinationRule(Rule):
             elif first.type in self.valid_types and second.has_large_scale():
                 # e.g. 2.1 hundred -> consume both (result 210)
                 consumed_tokens += 2
-                last_match = MatchType.DUAl_SCALE
+                last_match = MatchType.DUAL_SCALE
                 last_scale = second.scale()
             elif first.has_large_scale() and (second.type in self.valid_types or last_match == MatchType.DUAL_HUNDRED):
                 # e.g. *hundred two -> consume hundred
@@ -89,7 +90,7 @@ class CombinationRule(Rule):
                 consumed_tokens += 1
                 last_match = MatchType.SCALE
                 last_scale = first.scale()
-            elif last_match in [MatchType.SCALE, MatchType.DUAl_SCALE] and first.has_large_scale():
+            elif last_match in [MatchType.SCALE, MatchType.DUAL_SCALE] and first.has_large_scale():
                 # Two consecutive scales are only allowed when the scale increases
                 # e.g. hundred thousand -> ok
                 # e.g. thousand hundred -> no valid number
@@ -98,7 +99,7 @@ class CombinationRule(Rule):
                     last_match = MatchType.SCALE
                 else:
                     last_match = None
-            elif last_match in [MatchType.SCALE, MatchType.DUAl_SCALE] and first.type in self.valid_types:
+            elif last_match in [MatchType.SCALE, MatchType.DUAL_SCALE] and first.type in self.valid_types:
                 # e.g. hundred *two -> consume two
                 consumed_tokens += 1
                 last_match = MatchType.SINGLE
