@@ -1,5 +1,6 @@
 import enum
 import re
+import types
 from decimal import Decimal
 from typing import Optional
 
@@ -18,32 +19,34 @@ class WordType(enum.Enum):
 
 class Token(object):
     # Static init code (only executed once and not for each token instance)
-    UNITS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
-    TEENS = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen',
-             'nineteen']
-    TENS = ['twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
-    SCALES = ['hundred', 'thousand', 'million', 'billion', 'trillion']
-    SCALE_VALUES = [100, 1_000, 10_000, 1_000_000, 10_000_000, 1_000_000_000, 100_000_000_000, 1_000_000_000_000]  # used for has_large_scale
-    INDIAN_SCALES = ['lakh', 'crore', 'arab', 'kharab']
-    CONJUNCTION = ['and']
-    ORDINAL_WORDS = {'first': 'one', 'second': 'two', 'third': 'three', 'fifth': 'five',
-                     'eighth': 'eight', 'ninth': 'nine', 'twelfth': 'twelve'}
-    ORDINAL_ENDINGS = [('ieth', 'y'), ('th', '')]
+    UNITS = ('zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine')
+    TEENS = ('ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen',
+             'nineteen')
+    TENS = ('twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety')
+    SCALES = ('hundred', 'thousand', 'million', 'billion', 'trillion')
+    SCALE_VALUES = frozenset({100, 1_000, 10_000, 1_000_000, 10_000_000, 1_000_000_000, 100_000_000_000, 1_000_000_000_000})  # used for has_large_scale
+    INDIAN_SCALES = ('lakh', 'crore', 'arab', 'kharab')
+    CONJUNCTION = frozenset({'and'})
+    ORDINAL_WORDS = types.MappingProxyType({'first': 'one', 'second': 'two', 'third': 'three', 'fifth': 'five',
+                                            'eighth': 'eight', 'ninth': 'nine', 'twelfth': 'twelve'})
+    ORDINAL_ENDINGS = (('ieth', 'y'), ('th', ''))
 
-    numwords = {
+    _numwords_build = {
         'and': (1, 0)  # (scale, value)
     }
     for idx, word in enumerate(UNITS):
-        numwords[word] = (1, idx)
+        _numwords_build[word] = (1, idx)
     for idx, word in enumerate(TEENS):
-        numwords[word] = (1, idx + 10)
+        _numwords_build[word] = (1, idx + 10)
     for idx, word in enumerate(TENS):
-        numwords[word] = (1, (idx + 2) * 10)
+        _numwords_build[word] = (1, (idx + 2) * 10)
     for idx, word in enumerate(SCALES):
-        numwords[word] = (10 ** (idx * 3 or 2), 0)
+        _numwords_build[word] = (10 ** (idx * 3 or 2), 0)
     for idx, word in enumerate(INDIAN_SCALES):
-        numwords[word] = (10 ** (5 + idx * 2), 0)
-    numwords['oh'] = (1, 0)  # alias for zero; kept separate to avoid index-10 collision in UNITS enumeration
+        _numwords_build[word] = (10 ** (5 + idx * 2), 0)
+    _numwords_build['oh'] = (1, 0)  # alias for zero; kept separate to avoid index-10 collision in UNITS enumeration
+    numwords = types.MappingProxyType(_numwords_build)
+    del _numwords_build
 
     def __init__(self, word: str, glue: str) -> None:
         """
