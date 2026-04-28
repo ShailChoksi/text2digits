@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "text2digits"
-version = "0.1.1"
+version = "0.1.2"
 description = "A small library to convert text numbers to digits in a string"
 readme = "README.md"
 license = { text = "MIT" }
