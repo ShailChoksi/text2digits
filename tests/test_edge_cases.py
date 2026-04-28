@@ -77,11 +77,11 @@ class TestDecimalSupport:
 
 
 class TestNegativePrefix:
-    def test_negative_word_preserved(self):
-        """'negative' is not a recognised token; it passes through unchanged."""
+    def test_negative_converts_to_unary_minus(self):
+        """'negative' before a number is converted to a unary '-'."""
         result = text2digits.Text2Digits().convert("negative five")
-        assert result == "negative 5"
+        assert result == "-5"
 
     def test_negative_in_sentence(self):
         result = text2digits.Text2Digits().convert("it was negative thirty seven degrees")
-        assert result == "it was negative 37 degrees"
+        assert result == "it was -37 degrees"
